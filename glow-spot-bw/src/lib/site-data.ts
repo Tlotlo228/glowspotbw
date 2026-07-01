@@ -1,5 +1,5 @@
 const IMG = {
-  logo: "https://i.postimg.cc/vZkYJCkb/IMG-0742.jpg",
+  logo: "https://i.postimg.cc/y8sRt3qK/IMG-0742.jpg",
   nailsNude: "https://i.postimg.cc/59sVcZQR/IMG-0741.jpg",
   nailsZebra: "https://i.postimg.cc/qB55x03q/IMG-0740.jpg",
   nailsFrench: "https://i.postimg.cc/v84ss07w/IMG-0739.jpg",
