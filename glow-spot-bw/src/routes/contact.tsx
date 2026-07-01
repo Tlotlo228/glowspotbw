@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MapPin, Phone, Clock, Instagram } from "lucide-react";
 import { PHONE_DISPLAY, WHATSAPP_NUMBER, INSTAGRAM_URL, INSTAGRAM_HANDLE } from "@/lib/site-data";
-import directions from "@/assets/gallery/directions.png.asset.json";
+const directions = { url: "https://i.postimg.cc/L6k0KPWM/IMG-0732.jpg" };
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
