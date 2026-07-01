@@ -12,13 +12,13 @@ const IMG = {
 };
 
 export const GALLERY = [
-  { src: IMG.nailsNude, alt: "Glossy nude almond nails", category: "Nails" },
+ 
   { src: IMG.nailsZebra, alt: "Zebra French tip nail art", category: "Nails" },
   { src: IMG.nailsFrench, alt: "Rose-gold nails with floral 3D art", category: "Nails" },
-  { src: IMG.nailsGold, alt: "Gold glitter ombre stiletto nails", category: "Nails" },
+  { src: IMG.nailsGold, alt: "Gold glitter ombre stiletto nails", category: "Lashes" },
   { src: IMG.lashes1, alt: "Volume lash extensions close-up", category: "Lashes" },
-  { src: IMG.lashes2, alt: "Wispy lash extension fan", category: "Lashes" },
-  { src: IMG.pedicure, alt: "Leopard French tip pedicure", category: "Pedicure" },
+  { src: IMG.lashes2, alt: "Wispy lash extension fan", category: "Nails" },
+  { src: IMG.pedicure, alt: "Leopard French tip pedicure", category: "All" },
   { src: IMG.flirty, alt: "Flirty Friday lash promo", category: "Promos" },
 ] as const;
 
