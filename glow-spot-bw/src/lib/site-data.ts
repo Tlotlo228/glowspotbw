@@ -1,21 +1,25 @@
-import nailsNude from "../assets/gallery/nails-nude.jpeg.asset.json";
-import nailsZebra from "../assets/gallery/nails-zebra.jpeg.asset.json";
-import nailsFrench from "../assets/gallery/nails-french.jpeg.asset.json";
-import nailsGold from "../assets/gallery/nails-gold.jpeg.asset.json";
-import lashes1 from "../assets/gallery/lashes-1.jpeg.asset.json";
-import lashes2 from "../assets/gallery/lashes-2.jpeg.asset.json";
-import pedicure from "../assets/gallery/pedicure.jpeg.asset.json";
-import flirty from "../assets/gallery/flirty-fridays.png.asset.json";
+const IMG = {
+  logo: "https://i.postimg.cc/vZkYJCkb/IMG-0742.jpg",
+  nailsNude: "https://i.postimg.cc/59sVcZQR/IMG-0741.jpg",
+  nailsZebra: "https://i.postimg.cc/qB55x03q/IMG-0740.jpg",
+  nailsFrench: "https://i.postimg.cc/v84ss07w/IMG-0739.jpg",
+  nailsGold: "https://i.postimg.cc/CKh367MX/IMG-0738.jpg",
+  lashes1: "https://i.postimg.cc/BZLdyXsD/IMG-0737.jpg",
+  lashes2: "https://i.postimg.cc/K8FwRfTQ/IMG-0735.jpg",
+  pedicure: "https://i.postimg.cc/gJfBdHdF/IMG-0446.png",
+  flirty: "https://i.postimg.cc/L6vB337Z/IMG-0445.png",
+  directions: "https://i.postimg.cc/L6k0KPWM/IMG-0732.jpg",
+};
 
 export const GALLERY = [
-  { src: nailsNude.url, alt: "Glossy nude almond nails", category: "Nails" },
-  { src: nailsZebra.url, alt: "Zebra French tip nail art", category: "Nails" },
-  { src: nailsFrench.url, alt: "Rose-gold nails with floral 3D art", category: "Nails" },
-  { src: nailsGold.url, alt: "Gold glitter ombre stiletto nails", category: "Nails" },
-  { src: lashes1.url, alt: "Volume lash extensions close-up", category: "Lashes" },
-  { src: lashes2.url, alt: "Wispy lash extension fan", category: "Lashes" },
-  { src: pedicure.url, alt: "Leopard French tip pedicure", category: "Pedicure" },
-  { src: flirty.url, alt: "Flirty Friday lash promo", category: "Promos" },
+  { src: IMG.nailsNude, alt: "Glossy nude almond nails", category: "Nails" },
+  { src: IMG.nailsZebra, alt: "Zebra French tip nail art", category: "Nails" },
+  { src: IMG.nailsFrench, alt: "Rose-gold nails with floral 3D art", category: "Nails" },
+  { src: IMG.nailsGold, alt: "Gold glitter ombre stiletto nails", category: "Nails" },
+  { src: IMG.lashes1, alt: "Volume lash extensions close-up", category: "Lashes" },
+  { src: IMG.lashes2, alt: "Wispy lash extension fan", category: "Lashes" },
+  { src: IMG.pedicure, alt: "Leopard French tip pedicure", category: "Pedicure" },
+  { src: IMG.flirty, alt: "Flirty Friday lash promo", category: "Promos" },
 ] as const;
 
 export const GALLERY_CATEGORIES = ["All", "Nails", "Lashes", "Pedicure", "Promos"] as const;
