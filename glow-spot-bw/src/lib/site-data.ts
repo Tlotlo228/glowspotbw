@@ -80,6 +80,45 @@ export const SERVICE_GROUPS: { group: string; services: Service[] }[] = [
       { id: "soak-acrylic", name: "Soak Off — Acrylic", description: "Safe removal of acrylic.", price: 40, minutes: 30, duration: "≈ 30 min" },
     ],
   },
+    {
+    group: "Lashes",
+    services: [
+      { id: "lash-classic", name: "Classic Set", description: "Full set of classic lash extensions.", price: 250, minutes: 90, duration: "≈ 1 hr 30" },
+      { id: "lash-wet", name: "Wet Set", description: "Full set of wet-look lash extensions.", price: 280, minutes: 90, duration: "≈ 1 hr 30" },
+      { id: "lash-hybrid", name: "Hybrid Set", description: "Full set of hybrid lash extensions.", price: 320, minutes: 105, duration: "≈ 1 hr 45" },
+      { id: "lash-volume", name: "Volume Set", description: "Full set of volume lash extensions.", price: 360, minutes: 120, duration: "≈ 2 hrs" },
+      { id: "lash-wispy-volume", name: "Wispy Volume", description: "Full set of wispy volume lash extensions.", price: 420, minutes: 120, duration: "≈ 2 hrs" },
+      { id: "lash-cluster", name: "Cluster Lashes", description: "Full set of cluster lashes.", price: 150, minutes: 60, duration: "≈ 1 hr" },
+    ],
+  },
+  {
+    group: "Lash Re-fills — 2 Weeks",
+    services: [
+      { id: "refill2-classic", name: "Classic Set Re-fill", description: "2-week re-fill for classic lashes.", price: 120, minutes: 45, duration: "≈ 45 min" },
+      { id: "refill2-wet", name: "Wet Set Re-fill", description: "2-week re-fill for wet-look lashes.", price: 140, minutes: 45, duration: "≈ 45 min" },
+      { id: "refill2-hybrid", name: "Hybrid Set Re-fill", description: "2-week re-fill for hybrid lashes.", price: 160, minutes: 60, duration: "≈ 1 hr" },
+      { id: "refill2-volume", name: "Volume Set Re-fill", description: "2-week re-fill for volume lashes.", price: 180, minutes: 60, duration: "≈ 1 hr" },
+      { id: "refill2-wispy-volume", name: "Wispy Volume Re-fill", description: "2-week re-fill for wispy volume lashes.", price: 180, minutes: 60, duration: "≈ 1 hr" },
+    ],
+  },
+  {
+    group: "Lash Re-fills — 3 Weeks",
+    services: [
+      { id: "refill3-classic", name: "Classic Set Re-fill", description: "3-week re-fill for classic lashes.", price: 140, minutes: 45, duration: "≈ 45 min" },
+      { id: "refill3-wet", name: "Wet Set Re-fill", description: "3-week re-fill for wet-look lashes.", price: 160, minutes: 45, duration: "≈ 45 min" },
+      { id: "refill3-hybrid", name: "Hybrid Set Re-fill", description: "3-week re-fill for hybrid lashes.", price: 180, minutes: 60, duration: "≈ 1 hr" },
+      { id: "refill3-volume", name: "Volume Set Re-fill", description: "3-week re-fill for volume lashes.", price: 200, minutes: 60, duration: "≈ 1 hr" },
+      { id: "refill3-wispy-volume", name: "Wispy Volume Re-fill", description: "3-week re-fill for wispy volume lashes.", price: 220, minutes: 60, duration: "≈ 1 hr" },
+    ],
+  },
+  {
+    group: "Lash Removals",
+    services: [
+      { id: "removal-individuals", name: "All Individuals Removal", description: "Removal of individual lash extensions. Free if paired with a fresh set.", price: 100, minutes: 20, duration: "≈ 20 min" },
+      { id: "removal-clusters", name: "Clusters Removal", description: "Removal of cluster lashes. Free if paired with a fresh set.", price: 50, minutes: 15, duration: "≈ 15 min" },
+    ],
+  },
+
   {
     group: "Makeup & Hair",
     services: [
