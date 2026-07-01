@@ -12,8 +12,7 @@ import { Menu, X } from "lucide-react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import logo from "../assets/gallery/logo.jpeg.asset.json";
-
+const logo = { url: "https://i.postimg.cc/vZkYJCkb/IMG-0742.jpg" };
 function NotFoundComponent() {
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background px-4">
