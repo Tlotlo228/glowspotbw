@@ -158,10 +158,12 @@ function Book() {
             <PayCard
               title="Bank Transfer (FNB Botswana)"
               lines={[
-                `Account name: ${PAYMENT_DETAILS.bank.name}`,
-                `Account no.: ${PAYMENT_DETAILS.bank.account}`,
-                `Branch: ${PAYMENT_DETAILS.bank.branch}`,
-              ]}
+  `Account name: ${PAYMENT_DETAILS.bank.name}`,
+  `Account no.: ${PAYMENT_DETAILS.bank.account}`,
+  `Branch: ${PAYMENT_DETAILS.bank.branch}`,
+  `Branch code: ${PAYMENT_DETAILS.bank.branchCode}`,
+]}
+
               copyText={PAYMENT_DETAILS.bank.account}
             />
           </div>
