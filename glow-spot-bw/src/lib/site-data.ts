@@ -174,9 +174,16 @@ export const CALENDAR_URL =
   "https://calendar.google.com/calendar/appointments/schedules/AcZssZ1J7YZ_FMnOybCH-VCIOzWN6TSKioo39N2GQUW_k1VDqj40QK5cvBBi3actmEdZ-3-4B64BXTJO?gv=true";
 
 export const PAYMENT_DETAILS = {
-  orangeMoney: { name: "Glow Spot BW", number: "+267 72 541 683" },
-  bank: { bank: "First National Bank Botswana", account: "62812345678", branch: "Main Mall", name: "Glow Spot BW" },
+  orangeMoney: { name: "Glow Spot BW (Pay2Cell/Orange Money)", number: "72541683" },
+  bank: {
+    bank: "First National Bank Botswana",
+    name: "Glow Spot Bw",
+    account: "63138523435",
+    branch: "Broadhurst Industrial",
+    branchCode: "281267",
+  },
 };
+
 
 export const BLOCKED_SLOTS: Record<string, string[]> = {
   "2026-07-01": ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00"],
