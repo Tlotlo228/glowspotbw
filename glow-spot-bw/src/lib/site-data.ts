@@ -32,6 +32,7 @@ export type Service = {
   minutes: number;
   price: number;
   priceLabel?: string;
+  quantitySelectable?: boolean;
 };
 
 export const SERVICE_GROUPS: { group: string; services: Service[] }[] = [
@@ -57,21 +58,93 @@ export const SERVICE_GROUPS: { group: string; services: Service[] }[] = [
       { id: "pedi-polygel", name: "Polygel Pedi", description: "Polygel finish on toes.", price: 150, minutes: 75, duration: "≈ 1 hr 15" },
       { id: "pedi-acrylic", name: "Acrylic Pedi", description: "Acrylic finish on toes.", price: 180, minutes: 90, duration: "≈ 1 hr 30" },
     ],
-  },
-  {
-    group: "Nail Art",
-    services: [
-      { id: "art-chrome", name: "Chrome", description: "Mirror chrome finish per nail.", price: 30, minutes: 15, duration: "≈ 15 min add-on" },
-      { id: "art-aura", name: "Aura / Ombré", description: "Soft aura or ombré effect.", price: 40, minutes: 20, duration: "≈ 20 min add-on" },
-      { id: "art-3d", name: "3D Art (per nail)", description: "Sculpted 3D detail.", price: 10, minutes: 10, duration: "≈ 10 min add-on" },
-      { id: "art-charms", name: "Charms (per nail)", description: "Decorative charms applied per nail.", price: 5, minutes: 5, duration: "≈ 5 min add-on" },
-      { id: "art-freehand", name: "Free Hand (animals / cartoons)", description: "Hand-painted custom art — from P30.", price: 30, priceLabel: "from P30", minutes: 20, duration: "≈ 20 min add-on" },
-      { id: "art-french-mani", name: "Classic French (Manicure)", description: "Add-on classic french tip on hands.", price: 40, minutes: 15, duration: "≈ 15 min add-on" },
-      { id: "art-cateye-mani", name: "Cateye (Manicure)", description: "Add-on cateye effect on hands.", price: 30, minutes: 15, duration: "≈ 15 min add-on" },
-      { id: "art-french-pedi", name: "Classic French (Pedicure)", description: "Add-on classic french tip on toes.", price: 20, minutes: 15, duration: "≈ 15 min add-on" },
-      { id: "art-cateye-pedi", name: "Cateye (Pedicure)", description: "Add-on cateye effect on toes.", price: 20, minutes: 15, duration: "≈ 15 min add-on" },
-    ],
-  },
+  },{
+  group: "Nail Art",
+  services: [
+    {
+      id: "art-chrome",
+      name: "Chrome",
+      description: "Mirror chrome finish per nail.",
+      price: 30,
+      minutes: 15,
+      duration: "≈ 15 min add-on",
+      quantitySelectable: true,
+    },
+    {
+      id: "art-aura",
+      name: "Aura / Ombré",
+      description: "Soft aura or ombré effect.",
+      price: 40,
+      minutes: 20,
+      duration: "≈ 20 min add-on",
+      quantitySelectable: true,
+    },
+    {
+      id: "art-3d",
+      name: "3D Art (per nail)",
+      description: "Sculpted 3D detail.",
+      price: 10,
+      minutes: 10,
+      duration: "≈ 10 min add-on",
+      quantitySelectable: true,
+    },
+    {
+      id: "art-charms",
+      name: "Charms (per nail)",
+      description: "Decorative charms applied per nail.",
+      price: 5,
+      minutes: 5,
+      duration: "≈ 5 min add-on",
+      quantitySelectable: true,
+    },
+    {
+      id: "art-freehand",
+      name: "Free Hand (animals / cartoons)",
+      description: "Hand-painted custom art — from P30.",
+      price: 30,
+      priceLabel: "from P30",
+      minutes: 20,
+      duration: "≈ 20 min add-on",
+      quantitySelectable: true,
+    },
+    {
+      id: "art-french-mani",
+      name: "Classic French (Manicure)",
+      description: "Add-on classic french tip on hands.",
+      price: 40,
+      minutes: 15,
+      duration: "≈ 15 min add-on",
+      quantitySelectable: true,
+    },
+    {
+      id: "art-cateye-mani",
+      name: "Cateye (Manicure)",
+      description: "Add-on cateye effect on hands.",
+      price: 30,
+      minutes: 15,
+      duration: "≈ 15 min add-on",
+      quantitySelectable: true,
+    },
+    {
+      id: "art-french-pedi",
+      name: "Classic French (Pedicure)",
+      description: "Add-on classic french tip on toes.",
+      price: 20,
+      minutes: 15,
+      duration: "≈ 15 min add-on",
+      quantitySelectable: true,
+    },
+    {
+      id: "art-cateye-pedi",
+      name: "Cateye (Pedicure)",
+      description: "Add-on cateye effect on toes.",
+      price: 20,
+      minutes: 15,
+      duration: "≈ 15 min add-on",
+      quantitySelectable: true,
+    },
+  ],
+},
   {
     group: "Soak Off",
     services: [
