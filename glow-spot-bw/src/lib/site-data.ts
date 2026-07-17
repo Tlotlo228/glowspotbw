@@ -9,17 +9,52 @@ const IMG = {
   pedicure: "https://i.postimg.cc/gJfBdHdF/IMG-0446.png",
   flirty: "https://i.postimg.cc/L6vB337Z/IMG-0445.png",
   directions: "https://i.postimg.cc/L6k0KPWM/IMG-0732.jpg",
+
+  // New Gallery Images
+  gallery1: "https://i.postimg.cc/mDV04vZ2/IMG-5834.jpg",
+  gallery2: "https://i.postimg.cc/sXctyv9G/IMG-4834.jpg",
+  gallery3: "https://i.postimg.cc/brVWDWBC/IMG-8029.jpg",
+  gallery4: "https://i.postimg.cc/WzYCFCys/IMG-0625.jpg",
+  gallery5: "https://i.postimg.cc/QCYw9wyy/IMG-9448.jpg",
+  gallery6: "https://i.postimg.cc/2y9MbMKP/IMG-9496.jpg",
+  gallery7: "https://i.postimg.cc/5yKTYTr9/IMG-9519.jpg",
+  gallery8: "https://i.postimg.cc/NGdWz2jr/IMG-9640.jpg",
+  gallery9: "https://i.postimg.cc/RCgjDJZw/IMG-9655.jpg",
+  gallery10: "https://i.postimg.cc/xTkFps71/IMG-9850.jpg",
+  gallery11: "https://i.postimg.cc/6571bHSt/IMG-9847.jpg",
+  gallery12: "https://i.postimg.cc/Yq4yDXVr/IMG-0217.jpg",
+  gallery13: "https://i.postimg.cc/ZK9DsfgT/IMG-0402.jpg",
+  gallery14: "https://i.postimg.cc/RV3bpP8H/IMG-0545.jpg",
+  gallery15: "https://i.postimg.cc/XYd14r41/IMG-9576.jpg",
+  gallery16: "https://i.postimg.cc/2Sh9r1rT/IMG-9535.jpg",
 };
 
 export const GALLERY = [
- 
   { src: IMG.nailsZebra, alt: "Zebra French tip nail art", category: "Nails" },
   { src: IMG.nailsFrench, alt: "Rose-gold nails with floral 3D art", category: "Nails" },
-  { src: IMG.nailsGold, alt: "Gold glitter ombre stiletto nails", category: "Lashes" },
+  { src: IMG.nailsGold, alt: "Gold glitter ombre stiletto nails", category: "Nails" },
   { src: IMG.lashes1, alt: "Volume lash extensions close-up", category: "Lashes" },
-  { src: IMG.lashes2, alt: "Wispy lash extension fan", category: "Nails" },
-  { src: IMG.pedicure, alt: "Leopard French tip pedicure", category: "All" },
+  { src: IMG.lashes2, alt: "Wispy lash extension fan", category: "Lashes" },
+  { src: IMG.pedicure, alt: "Leopard French tip pedicure", category: "Nails" },
   { src: IMG.flirty, alt: "Flirty Friday lash promo", category: "Promos" },
+
+  // New Images
+  { src: IMG.gallery1, alt: "Luxury nail art design", category: "Nails" },
+  { src: IMG.gallery2, alt: "Luxury nail art design", category: "Nails" },
+  { src: IMG.gallery3, alt: "Luxury nail art design", category: "Nails" },
+  { src: IMG.gallery4, alt: "Luxury nail art design", category: "Nails" },
+  { src: IMG.gallery5, alt: "Luxury nail art design", category: "Nails" },
+  { src: IMG.gallery6, alt: "Luxury nail art design", category: "Nails" },
+  { src: IMG.gallery7, alt: "Luxury nail art design", category: "Nails" },
+  { src: IMG.gallery8, alt: "Luxury nail art design", category: "Nails" },
+  { src: IMG.gallery9, alt: "Luxury nail art design", category: "Nails" },
+  { src: IMG.gallery10, alt: "Luxury nail art design", category: "Nails" },
+  { src: IMG.gallery11, alt: "Luxury nail art design", category: "Nails" },
+  { src: IMG.gallery12, alt: "Luxury nail art design", category: "Nails" },
+  { src: IMG.gallery13, alt: "Luxury nail art design", category: "Nails" },
+  { src: IMG.gallery14, alt: "Luxury nail art design", category: "Nails" },
+  { src: IMG.gallery15, alt: "Luxury nail art design", category: "Nails" },
+  { src: IMG.gallery16, alt: "Luxury nail art design", category: "Nails" },
 ] as const;
 
 export const GALLERY_CATEGORIES = ["All", "Nails", "Lashes", "Pedicure", "Promos"] as const;
