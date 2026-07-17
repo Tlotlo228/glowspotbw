@@ -43,18 +43,33 @@ function Book() {
     [service],
   );
   const [selectedIds, setSelectedIds] = useState<string[]>([initialId]);
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [notes, setNotes] = useState("");
-  const [calendarLive, setCalendarLive] = useState(false);
 
+// Quantity for nail-art services
+const [serviceQuantities, setServiceQuantities] = useState<
+  Record<string, number>
+>({});
+
+const [name, setName] = useState("");
+const [phone, setPhone] = useState("");
+const [notes, setNotes] = useState("");
+const [calendarLive, setCalendarLive] = useState(false);
   const selectedServices = useMemo(
     () => selectedIds.map((id) => ALL_SERVICES.find((s) => s.id === id)!).filter(Boolean),
     [selectedIds],
   );
-  const totalMinutes = selectedServices.reduce((n, s) => n + s.minutes, 0);
-  const totalPrice = selectedServices.reduce((n, s) => n + s.price, 0);
+  const totalMinutes =
+  selectedServices.reduce((n, s) => n + s.minutes, 0) +
+  Object.entries(serviceQuantities).reduce((sum, [id, qty]) => {
+    const service = ALL_SERVICES.find((s) => s.id === id);
+    return service ? sum + service.minutes * qty : sum;
+  }, 0);
 
+const totalPrice =
+  selectedServices.reduce((n, s) => n + s.price, 0) +
+  Object.entries(serviceQuantities).reduce((sum, [id, qty]) => {
+    const service = ALL_SERVICES.find((s) => s.id === id);
+    return service ? sum + service.price * qty : sum;
+  }, 0);
   function toggleService(id: string) {
     setSelectedIds((prev) => {
       if (prev.includes(id)) {
@@ -63,7 +78,29 @@ function Book() {
       return [...prev, id];
     });
   }
+function increaseQuantity(id: string) {
+  setServiceQuantities((prev) => ({
+    ...prev,
+    [id]: (prev[id] ?? 0) + 1,
+  }));
+}
 
+function decreaseQuantity(id: string) {
+  setServiceQuantities((prev) => {
+    const qty = (prev[id] ?? 0) - 1;
+
+    if (qty <= 0) {
+      const copy = { ...prev };
+      delete copy[id];
+      return copy;
+    }
+
+    return {
+      ...prev,
+      [id]: qty,
+    };
+  });
+}
   const deposit = DEPOSIT_AMOUNT;
 
   const summary = useMemo(() => {
@@ -71,6 +108,15 @@ function Book() {
     lines.push("Hello Glow Spot BW! I'd like to book:", "");
     lines.push("Services:");
     for (const s of selectedServices) {
+      Object.entries(serviceQuantities).forEach(([id, qty]) => {
+  const service = ALL_SERVICES.find((s) => s.id === id);
+
+  if (!service) return;
+
+  lines.push(
+    `• ${service.name} ×${qty} — BWP ${service.price * qty}`
+  );
+});
       lines.push(`• ${s.name} — ${s.priceLabel ?? `BWP ${s.price}`} (${s.duration ?? formatMinutes(s.minutes)})`);
     }
     lines.push(`Total: BWP ${totalPrice} · ${formatMinutes(totalMinutes)}`);
@@ -101,43 +147,107 @@ function Book() {
         </p>
       </header>
 
-      <section className="mt-10">
-        <h2 className="font-display text-xl text-primary">Step 1 — Choose your service(s)</h2>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Pick as many services as you'd like — we'll confirm the full time on WhatsApp.
-        </p>
-        <div className="mt-3 space-y-2">
-          {ALL_SERVICES.map((s) => {
-            const chosen = selectedIds.includes(s.id);
-            return (
+     <section className="mt-10">
+  <h2 className="font-display text-xl text-primary">
+    Step 1 — Choose your service(s)
+  </h2>
+
+  <p className="mt-1 text-xs text-muted-foreground">
+    Select your main service. Nail Art can be added multiple times.
+  </p>
+
+  <div className="mt-3 space-y-2">
+    {ALL_SERVICES.map((s) => {
+      const chosen = selectedIds.includes(s.id);
+      const qty = serviceQuantities[s.id] ?? 0;
+      const isQuantity = s.quantitySelectable === true;
+
+      return (
+        <div
+          key={s.id}
+          className={`flex items-start justify-between gap-3 rounded-xl border p-3 ${
+            chosen
+              ? "border-primary bg-primary/5"
+              : "border-border bg-card"
+          }`}
+        >
+          <button
+            type="button"
+            disabled={isQuantity}
+            onClick={() => toggleService(s.id)}
+            className="flex flex-1 items-start gap-3 text-left disabled:pointer-events-none"
+          >
+            <div className="flex-1">
+              <p className="font-medium">
+                {s.name}
+              </p>
+
+              <p className="mt-1 text-xs text-muted-foreground">
+                {formatMinutes(s.minutes)} · {s.description}
+              </p>
+            </div>
+          </button>
+
+          <div className="text-right">
+            <p className="font-display text-primary">
+              {s.priceLabel ?? `P${s.price}`}
+            </p>
+
+            {isQuantity ? (
+              <div className="mt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => decreaseQuantity(s.id)}
+                  className="flex h-8 w-8 items-center justify-center rounded-full border"
+                >
+                  −
+                </button>
+
+                <span className="w-6 text-center">
+                  {qty}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => increaseQuantity(s.id)}
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                >
+                  +
+                </button>
+              </div>
+            ) : (
               <button
                 type="button"
-                key={s.id}
                 onClick={() => toggleService(s.id)}
-                aria-pressed={chosen}
-                className={`flex w-full items-start justify-between gap-3 rounded-xl border p-3 text-left transition ${
-                  chosen ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary/50"
+                className={`mt-2 inline-flex h-8 w-8 items-center justify-center rounded-full ${
+                  chosen
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-primary"
                 }`}
               >
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-foreground">{s.name}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{formatMinutes(s.minutes)} · {s.description}</p>
-                </div>
-                <div className="shrink-0 text-right">
-                  <p className="font-display text-base text-primary">{s.priceLabel ?? `P${s.price}`}</p>
-                  <span className={`mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full ${chosen ? "bg-primary text-primary-foreground" : "bg-secondary text-primary"}`}>
-                    {chosen ? <X className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
-                  </span>
-                </div>
+                {chosen ? (
+                  <X className="h-4 w-4" />
+                ) : (
+                  <Plus className="h-4 w-4" />
+                )}
               </button>
-            );
-          })}
+            )}
+          </div>
         </div>
-        <div className="mt-3 flex items-center justify-between rounded-xl bg-secondary/60 px-4 py-3 text-sm text-primary">
-          <span>{selectedServices.length} selected · {formatMinutes(totalMinutes)}</span>
-          <span className="font-display text-lg">BWP {totalPrice}</span>
-        </div>
-      </section>
+      );
+    })}
+  </div>
+
+  <div className="mt-4 rounded-xl bg-secondary/60 px-4 py-3 flex items-center justify-between">
+    <span>
+      {selectedServices.length} selected • {formatMinutes(totalMinutes)}
+    </span>
+
+    <span className="font-display text-lg">
+      BWP {totalPrice}
+    </span>
+  </div>
+</section>
 
       <section className="mt-10">
         <h2 className="font-display text-xl text-primary">Step 2 — Pay your BWP {DEPOSIT_AMOUNT} deposit</h2>
