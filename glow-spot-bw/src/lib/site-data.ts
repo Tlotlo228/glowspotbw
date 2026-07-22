@@ -279,7 +279,7 @@ export const INSTAGRAM_HANDLE = "@glowspot2861";
 export const DEPOSIT_AMOUNT = 100;
 export const AFTER_HOURS_FEE = 70;
 export const CALENDAR_URL =
-  "https://calendar.google.com/calendar/appointments/schedules/AcZssZ1J7YZ_FMnOybCH-VCIOzWN6TSKioo39N2GQUW_k1VDqj40QK5cvBBi3actmEdZ-3-4B64BXTJO?gv=true";
+  "https://calendar.google.com/calendar/appointments/schedules/AcZssZ1J7YZ_FMnOybCH-VCIOzWN6TSKioo39N2GQUW_k1VDqj40QK5cvBBi3actmEdZ-3-4B64BXTJO?gv=true&ctz=Africa%2FGaborone";
 
 export const PAYMENT_DETAILS = {
   orangeMoney: { name: "Glow Spot BW (Pay2Cell/Orange Money)", number: "72541683" },
