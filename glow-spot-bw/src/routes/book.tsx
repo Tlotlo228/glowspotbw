@@ -37,7 +37,7 @@ export const Route = createFileRoute("/book")({
       {
         name: "description",
         content:
-          "Book your nails, pedicure, makeup or wig appointment at Glow Spot BW Gaborone. A BWP 100 deposit secures your slot.",
+          "Book your appointment at Glow Spot BW Gaborone. Select multiple services, choose your appointment slot, pay your deposit and confirm through WhatsApp.",
       },
       {
         property: "og:title",
@@ -78,12 +78,15 @@ function Book() {
   const [notes, setNotes] = useState("");
   const [calendarLive, setCalendarLive] = useState(false);
 
-  // NEW FLOW:
-  // 1 = Calendar
-  // 2 = Services
-  // 3 = Deposit
-  // 4 = Details
-  // 5 = WhatsApp
+  /*
+    BOOKING FLOW
+
+    1 = Services
+    2 = Calendar / Slot
+    3 = Deposit
+    4 = Details
+    5 = WhatsApp
+  */
   const [currentStep, setCurrentStep] = useState(1);
 
   const selectedServices = useMemo(
@@ -104,29 +107,37 @@ function Book() {
     0,
   );
 
+  const deposit = DEPOSIT_AMOUNT;
+
+  const remainingBalance = Math.max(
+    totalPrice - deposit,
+    0,
+  );
+
   function toggleService(id: string) {
     setSelectedIds((prev) => {
       if (prev.includes(id)) {
-        return prev.length === 1
-          ? prev
-          : prev.filter((x) => x !== id);
+        // Always keep at least one service selected.
+        if (prev.length === 1) {
+          return prev;
+        }
+
+        return prev.filter((x) => x !== id);
       }
 
       return [...prev, id];
     });
   }
 
-  const deposit = DEPOSIT_AMOUNT;
-
   const summary = useMemo(() => {
     const lines: string[] = [];
 
     lines.push(
-      "Hello Glow Spot BW! I'd like to book:",
+      "Hello Glow Spot BW! I'd like to book an appointment.",
       "",
     );
 
-    lines.push("Services:");
+    lines.push("SERVICES:");
 
     for (const s of selectedServices) {
       lines.push(
@@ -136,8 +147,22 @@ function Book() {
       );
     }
 
+    lines.push("");
+
     lines.push(
-      `Total: BWP ${totalPrice} · ${formatMinutes(totalMinutes)}`,
+      `Total: BWP ${totalPrice}`,
+    );
+
+    lines.push(
+      `Duration: ${formatMinutes(totalMinutes)}`,
+    );
+
+    lines.push(
+      `Deposit: BWP ${deposit}`,
+    );
+
+    lines.push(
+      `Remaining balance: BWP ${remainingBalance}`,
     );
 
     lines.push("");
@@ -145,20 +170,21 @@ function Book() {
     lines.push(`Name: ${name || "—"}`);
     lines.push(`Phone: ${phone || "—"}`);
     lines.push(`Notes: ${notes || "—"}`);
-    lines.push(`Deposit paid: BWP ${deposit}`);
 
     lines.push("");
 
     lines.push(
-      `Hours: ${HOURS_TEXT}. Bookings outside these hours add BWP ${AFTER_HOURS_FEE}.`,
+      `Hours: ${HOURS_TEXT}. Appointments outside these hours add BWP ${AFTER_HOURS_FEE}.`,
+    );
+
+    lines.push("");
+
+    lines.push(
+      "I selected my preferred appointment date and time using the Glow Spot BW booking calendar.",
     );
 
     lines.push(
-      "I have selected my appointment slot on the booking calendar.",
-    );
-
-    lines.push(
-      "I will attach my proof of payment as a screenshot in this chat.",
+      "I will send my proof of payment manually as a screenshot or receipt in this WhatsApp chat.",
     );
 
     return lines.join("\n");
@@ -166,35 +192,61 @@ function Book() {
     selectedServices,
     totalMinutes,
     totalPrice,
+    deposit,
+    remainingBalance,
     name,
     phone,
     notes,
-    deposit,
   ]);
 
   const waLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
     summary,
   )}`;
 
-  function goNext() {
-    setCurrentStep((step) => Math.min(step + 1, 5));
+  /*
+    Scroll instantly to the top when changing steps.
+    This prevents the long smooth-scroll effect on mobile.
+  */
+  function scrollToTop() {
     window.scrollTo({
       top: 0,
-      behavior: "smooth",
+      left: 0,
+      behavior: "auto",
+    });
+  }
+
+  function goNext() {
+    setCurrentStep((step) => Math.min(step + 1, 5));
+
+    requestAnimationFrame(() => {
+      scrollToTop();
     });
   }
 
   function goBack() {
     setCurrentStep((step) => Math.max(step - 1, 1));
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
+
+    requestAnimationFrame(() => {
+      scrollToTop();
     });
   }
 
+  function goToStep(step: number) {
+    if (step <= currentStep) {
+      setCurrentStep(step);
+
+      requestAnimationFrame(() => {
+        scrollToTop();
+      });
+    }
+  }
+
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
-      {/* HEADER */}
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
+      {/* =========================================================
+          HEADER
+      ========================================================= */}
+
       <header className="text-center">
         <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
           Reserve
@@ -204,23 +256,26 @@ function Book() {
           Book your glow
         </h1>
 
-        <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
-          Choose your appointment slot first, then select your services,
+        <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
+          Choose your services first, select your appointment slot,
           pay your deposit, provide your details and confirm through
           WhatsApp.
         </p>
 
-        <p className="mx-auto mt-3 inline-flex flex-wrap items-center justify-center gap-2 rounded-full bg-secondary/60 px-4 py-1.5 text-xs text-primary/80">
+        <p className="mx-auto mt-4 inline-flex flex-wrap items-center justify-center gap-2 rounded-full bg-secondary/60 px-4 py-2 text-xs text-primary/80">
           <Clock className="h-3.5 w-3.5" />
           {HOURS_TEXT}
         </p>
       </header>
 
-      {/* PROGRESS */}
+      {/* =========================================================
+          PROGRESS STEPS
+      ========================================================= */}
+
       <div className="mt-8 grid grid-cols-5 gap-1 sm:gap-2">
         {[
-          { number: 1, label: "Slot" },
-          { number: 2, label: "Services" },
+          { number: 1, label: "Services" },
+          { number: 2, label: "Slot" },
           { number: 3, label: "Deposit" },
           { number: 4, label: "Details" },
           { number: 5, label: "WhatsApp" },
@@ -228,17 +283,9 @@ function Book() {
           <button
             key={step.number}
             type="button"
-            onClick={() => {
-              if (step.number <= currentStep) {
-                setCurrentStep(step.number);
-                window.scrollTo({
-                  top: 0,
-                  behavior: "smooth",
-                });
-              }
-            }}
+            onClick={() => goToStep(step.number)}
             disabled={step.number > currentStep}
-            className={`rounded-xl px-1 py-2 text-center transition ${
+            className={`rounded-xl px-1 py-2.5 text-center transition ${
               currentStep === step.number
                 ? "bg-primary text-primary-foreground"
                 : step.number < currentStep
@@ -249,6 +296,7 @@ function Book() {
             <span className="block text-xs font-bold">
               {step.number}
             </span>
+
             <span className="mt-0.5 block text-[10px] sm:text-xs">
               {step.label}
             </span>
@@ -256,32 +304,180 @@ function Book() {
         ))}
       </div>
 
-      {/* STEP 1 — CALENDAR */}
+      {/* =========================================================
+          STEP 1 — SERVICES
+      ========================================================= */}
+
       {currentStep === 1 && (
+        <section className="mt-10">
+          <div>
+            <h2 className="font-display text-2xl text-primary">
+              Step 1 — Choose your service(s)
+            </h2>
+
+            <p className="mt-1 text-sm text-muted-foreground">
+              Select every service you want for the same appointment.
+              Multiple services can be selected.
+            </p>
+          </div>
+
+          <div className="mt-5 space-y-3">
+            {ALL_SERVICES.map((s) => {
+              const chosen = selectedIds.includes(s.id);
+
+              return (
+                <button
+                  type="button"
+                  key={s.id}
+                  onClick={() => toggleService(s.id)}
+                  aria-pressed={chosen}
+                  className={`flex w-full items-start justify-between gap-4 rounded-2xl border p-4 text-left transition ${
+                    chosen
+                      ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                      : "border-border bg-card hover:border-primary/50"
+                  }`}
+                >
+                  <div className="flex min-w-0 flex-1 gap-3">
+                    <span
+                      className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
+                        chosen
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-primary"
+                      }`}
+                    >
+                      {chosen ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                      ) : (
+                        <Plus className="h-4 w-4" />
+                      )}
+                    </span>
+
+                    <div className="min-w-0">
+                      <p className="font-medium text-foreground">
+                        {s.name}
+                      </p>
+
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                        {formatMinutes(s.minutes)} ·{" "}
+                        {s.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 text-right">
+                    <p className="font-display text-lg text-primary">
+                      {s.priceLabel ?? `P${s.price}`}
+                    </p>
+
+                    <span className="text-[10px] text-muted-foreground">
+                      {formatMinutes(s.minutes)}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* SELECTED SERVICES SUMMARY */}
+
+          <div className="mt-5 rounded-2xl bg-secondary/60 p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Selected
+                </p>
+
+                <p className="mt-1 font-medium text-primary">
+                  {selectedServices.length} service
+                  {selectedServices.length === 1 ? "" : "s"}
+                </p>
+              </div>
+
+              <div className="text-right">
+                <p className="font-display text-xl text-primary">
+                  BWP {totalPrice}
+                </p>
+
+                <p className="text-xs text-muted-foreground">
+                  {formatMinutes(totalMinutes)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* NEXT */}
+
+          <div className="mt-6 flex justify-end">
+            <button
+              type="button"
+              onClick={goNext}
+              disabled={selectedServices.length === 0}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Continue to booking slot
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* =========================================================
+          STEP 2 — CALENDAR / SLOT
+      ========================================================= */}
+
+      {currentStep === 2 && (
         <section className="mt-10">
           <div className="flex items-center gap-2">
             <CalendarDays className="h-5 w-5 text-primary" />
 
-            <h2 className="font-display text-xl text-primary">
-              Step 1 — Pick your booking slot
+            <h2 className="font-display text-2xl text-primary">
+              Step 2 — Pick your booking slot
             </h2>
           </div>
 
-          <p className="mt-1 text-xs text-muted-foreground">
-            Choose your preferred date and time first. Mondays are
-            closed and unavailable slots are hidden automatically.
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            Choose your preferred date and time. Mondays are closed
+            and unavailable appointment slots are handled by the
+            booking calendar.
           </p>
 
-          <div className="mt-4 rounded-2xl border border-border bg-background shadow-soft">
-            <div className="relative">
+          {/* SELECTED SERVICES REMINDER */}
+
+          <div className="mt-5 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-wider text-primary/70">
+                  Your services
+                </p>
+
+                <p className="mt-1 text-sm font-medium text-primary">
+                  {selectedServices
+                    .map((s) => s.name)
+                    .join(" · ")}
+                </p>
+              </div>
+
+              <p className="shrink-0 font-display text-lg text-primary">
+                BWP {totalPrice}
+              </p>
+            </div>
+          </div>
+
+          {/* GOOGLE CALENDAR */}
+
+          <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-background shadow-soft">
+            <div className="relative min-h-[520px] sm:min-h-[700px]">
               <iframe
                 title="Glow Spot BW booking calendar"
                 src={CALENDAR_URL}
-                style={{ border: 0 }}
+                style={{
+                  border: 0,
+                  display: "block",
+                }}
                 width="100%"
-                height="600"
-                loading="lazy"
-                className={`block h-[520px] w-full rounded-t-2xl sm:h-[700px] ${
+                height="700"
+                loading="eager"
+                className={`block h-[520px] w-full sm:h-[700px] ${
                   calendarLive
                     ? ""
                     : "pointer-events-none select-none"
@@ -292,16 +488,16 @@ function Book() {
                 <button
                   type="button"
                   onClick={() => setCalendarLive(true)}
-                  className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-t-2xl bg-background/70 text-center backdrop-blur-sm transition hover:bg-background/50"
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/75 px-5 text-center backdrop-blur-sm transition hover:bg-background/60"
                   aria-label="Activate booking calendar"
                 >
-                  <span className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-soft">
+                  <span className="rounded-full bg-primary px-7 py-3 text-sm font-medium text-primary-foreground shadow-soft">
                     Tap to activate calendar
                   </span>
 
-                  <span className="max-w-xs text-xs text-muted-foreground">
-                    We disable the calendar by default so the page
-                    scrolls smoothly. Tap once to book.
+                  <span className="max-w-xs text-xs leading-5 text-muted-foreground">
+                    Activate the calendar to choose your date and
+                    appointment time.
                   </span>
                 </button>
               )}
@@ -318,7 +514,7 @@ function Book() {
                 </button>
               ) : (
                 <span className="text-muted-foreground">
-                  Calendar locked — page scrolls freely.
+                  Calendar locked — tap the calendar above to book.
                 </span>
               )}
 
@@ -328,108 +524,26 @@ function Book() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-primary underline-offset-2 hover:underline"
               >
-                Open calendar in new tab
+                Open calendar
                 <ExternalLink className="h-3 w-3" />
               </a>
             </div>
           </div>
 
-          <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm text-primary">
+          {/* INFO */}
+
+          <div className="mt-5 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm text-primary">
             <p className="font-medium">
-              Already selected your date and time?
+              Your services are already selected.
             </p>
 
             <p className="mt-1 text-primary/80">
-              Continue below to choose every service you need for
-              your appointment.
+              Once you have chosen your date and time in the
+              calendar, continue to the deposit payment instructions.
             </p>
           </div>
 
-          <div className="mt-6 flex justify-end">
-            <button
-              type="button"
-              onClick={goNext}
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
-            >
-              Continue to services
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
-        </section>
-      )}
-
-      {/* STEP 2 — SERVICES */}
-      {currentStep === 2 && (
-        <section className="mt-10">
-          <h2 className="font-display text-xl text-primary">
-            Step 2 — Choose your service(s)
-          </h2>
-
-          <p className="mt-1 text-xs text-muted-foreground">
-            Pick every service you need for this appointment so we
-            can reserve enough time.
-          </p>
-
-          <div className="mt-3 space-y-2">
-            {ALL_SERVICES.map((s) => {
-              const chosen = selectedIds.includes(s.id);
-
-              return (
-                <button
-                  type="button"
-                  key={s.id}
-                  onClick={() => toggleService(s.id)}
-                  aria-pressed={chosen}
-                  className={`flex w-full items-start justify-between gap-3 rounded-xl border p-3 text-left transition ${
-                    chosen
-                      ? "border-primary bg-primary/5"
-                      : "border-border bg-card hover:border-primary/50"
-                  }`}
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-foreground">
-                      {s.name}
-                    </p>
-
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {formatMinutes(s.minutes)} · {s.description}
-                    </p>
-                  </div>
-
-                  <div className="shrink-0 text-right">
-                    <p className="font-display text-base text-primary">
-                      {s.priceLabel ?? `P${s.price}`}
-                    </p>
-
-                    <span
-                      className={`mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full ${
-                        chosen
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary text-primary"
-                      }`}
-                    >
-                      {chosen ? (
-                        <X className="h-3.5 w-3.5" />
-                      ) : (
-                        <Plus className="h-3.5 w-3.5" />
-                      )}
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="mt-3 flex items-center justify-between rounded-xl bg-secondary/60 px-4 py-3 text-sm text-primary">
-            <span>
-              {selectedServices.length} selected ·{" "}
-              {formatMinutes(totalMinutes)}
-            </span>
-
-            <span className="font-display text-lg">
-              BWP {totalPrice}
-            </span>
-          </div>
+          {/* NAVIGATION */}
 
           <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
             <button
@@ -438,7 +552,7 @@ function Book() {
               className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/40 px-6 py-3 text-sm text-primary"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back
+              Back to services
             </button>
 
             <button
@@ -453,31 +567,34 @@ function Book() {
         </section>
       )}
 
-      {/* STEP 3 — DEPOSIT */}
+      {/* =========================================================
+          STEP 3 — DEPOSIT
+      ========================================================= */}
+
       {currentStep === 3 && (
         <section className="mt-10">
-          <h2 className="font-display text-xl text-primary">
+          <h2 className="font-display text-2xl text-primary">
             Step 3 — Pay your BWP {DEPOSIT_AMOUNT} deposit
           </h2>
 
-          <p className="mt-1 text-xs text-muted-foreground">
-            A flat BWP {DEPOSIT_AMOUNT} deposit is required before
-            your booking can be confirmed. The balance is paid at
-            the studio.
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            A BWP {DEPOSIT_AMOUNT} deposit is required before your
+            booking can be confirmed. The remaining balance is paid
+            at the studio.
           </p>
 
-          <div className="mt-3 rounded-2xl p-5 glass shadow-soft">
+          <div className="mt-5 rounded-2xl p-5 glass shadow-soft">
             <div className="flex items-baseline justify-between gap-4">
               <p className="text-sm text-muted-foreground">
-                Deposit
+                Deposit required
               </p>
 
-              <p className="font-display text-2xl text-primary">
+              <p className="font-display text-3xl text-primary">
                 BWP {deposit}
               </p>
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <PayCard
                 title="Orange Money"
                 lines={[
@@ -500,22 +617,28 @@ function Book() {
               />
             </div>
 
-            <p className="mt-4 text-xs text-muted-foreground">
-              Use your full name as reference. The balance is paid at
-              the studio on the day.
+            <p className="mt-4 text-xs leading-5 text-muted-foreground">
+              Use your full name as the payment reference. The
+              remaining balance is paid at the studio on the day of
+              your appointment.
             </p>
           </div>
 
-          <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm text-primary">
-            <p className="font-medium">
-              Important payment instruction
+          {/* MANUAL PROOF INSTRUCTION */}
+
+          <div className="mt-5 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
+            <p className="font-medium text-primary">
+              Payment proof
             </p>
 
-            <p className="mt-1 text-primary/80">
-              Send your payment screenshot or receipt directly on
-              WhatsApp during the final confirmation step.
+            <p className="mt-1 leading-6 text-primary/80">
+              After making your deposit, send your payment screenshot
+              or receipt manually through WhatsApp during the final
+              step. There is no payment-proof upload on this website.
             </p>
           </div>
+
+          {/* NAVIGATION */}
 
           <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
             <button
@@ -539,25 +662,33 @@ function Book() {
         </section>
       )}
 
-      {/* STEP 4 — DETAILS */}
+      {/* =========================================================
+          STEP 4 — DETAILS
+      ========================================================= */}
+
       {currentStep === 4 && (
         <section className="mt-10">
-          <h2 className="font-display text-xl text-primary">
+          <h2 className="font-display text-2xl text-primary">
             Step 4 — Your details
           </h2>
 
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <p className="mt-1 text-sm text-muted-foreground">
+            Enter your contact information so Glow Spot BW can
+            contact you about your appointment.
+          </p>
+
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <Field
               label="Full name"
-              id="n"
+              id="booking-name"
               value={name}
               onChange={setName}
-              placeholder="Lesego Mokoena"
+              placeholder="Your full name"
             />
 
             <Field
               label="WhatsApp number"
-              id="p"
+              id="booking-phone"
               value={phone}
               onChange={setPhone}
               placeholder="+267 71 234 567"
@@ -565,42 +696,51 @@ function Book() {
             />
           </div>
 
-          <div className="mt-4 rounded-xl border border-border bg-secondary/50 p-3 text-xs text-muted-foreground">
-            Your appointment date and time were selected in Step 1.
-            Slots outside {HOURS_TEXT} add BWP{" "}
+          <div className="mt-5 rounded-xl border border-border bg-secondary/50 p-4 text-xs leading-5 text-muted-foreground">
+            Your preferred appointment date and time were selected
+            using the booking calendar in Step 2.
+            <br />
+            <br />
+            Appointments outside {HOURS_TEXT} add BWP{" "}
             {AFTER_HOURS_FEE}.
           </div>
 
-          <div className="mt-3">
+          <div className="mt-5">
             <label
               htmlFor="notes"
               className="text-sm font-medium text-foreground"
             >
-              Inspiration / notes (optional)
+              Inspiration / notes
+              <span className="ml-1 text-xs text-muted-foreground">
+                (optional)
+              </span>
             </label>
 
             <textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              rows={3}
+              rows={4}
               placeholder="Tell us the vibe — colours, length, references…"
-              className="mt-1 w-full rounded-xl border border-border bg-card p-3 text-base"
+              className="mt-2 w-full resize-none rounded-xl border border-border bg-card p-3 text-base outline-none focus:border-primary"
             />
           </div>
 
-          <div className="mt-4 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 p-4 text-sm">
+          {/* MANUAL PROOF */}
+
+          <div className="mt-5 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 p-4 text-sm">
             <p className="font-display text-base text-primary">
-              📎 Send your proof of payment on WhatsApp
+              Payment proof is sent manually
             </p>
 
-            <p className="mt-1 text-muted-foreground">
-              Do <strong>not</strong> upload proof here — send your
-              payment screenshot or receipt directly in the WhatsApp
-              chat in the next step. Bookings without proof of
-              deposit will not be confirmed.
+            <p className="mt-1 leading-6 text-muted-foreground">
+              You do not need to upload anything here. After opening
+              WhatsApp, send your payment screenshot or receipt
+              directly in the chat.
             </p>
           </div>
+
+          {/* NAVIGATION */}
 
           <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
             <button
@@ -615,57 +755,84 @@ function Book() {
             <button
               type="button"
               onClick={goNext}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
+              disabled={!name.trim() || !phone.trim()}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Review WhatsApp message
+              Review WhatsApp
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
         </section>
       )}
 
-      {/* STEP 5 — WHATSAPP */}
+      {/* =========================================================
+          STEP 5 — WHATSAPP
+      ========================================================= */}
+
       {currentStep === 5 && (
         <section className="mt-10">
-          <h2 className="font-display text-xl text-primary">
-            Step 5 — Send on WhatsApp
-          </h2>
+          <div className="text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground">
+              <MessageCircle className="h-7 w-7" />
+            </div>
 
-          <p className="mt-1 text-sm text-muted-foreground">
-            Your booking summary is ready. Tap the button below to
-            open WhatsApp, then attach your payment screenshot before
-            sending the message.
-          </p>
+            <h2 className="mt-5 font-display text-2xl text-primary">
+              Step 5 — Confirm on WhatsApp
+            </h2>
 
-          <div className="mt-4 rounded-2xl border border-border bg-secondary/50 p-4">
+            <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
+              Your booking summary is ready. Open WhatsApp, send
+              the message and attach your payment screenshot or
+              receipt manually.
+            </p>
+          </div>
+
+          {/* SUMMARY */}
+
+          <div className="mt-5 rounded-2xl border border-border bg-secondary/50 p-4">
             <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-primary">
               Booking summary
             </p>
 
-            <pre className="whitespace-pre-wrap text-xs text-foreground/80">
+            <pre className="whitespace-pre-wrap text-xs leading-5 text-foreground/80">
               {summary}
             </pre>
           </div>
 
+          {/* FINAL INSTRUCTIONS */}
+
           <div className="mt-5 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm text-primary">
             <p className="font-medium">
-              Before you send:
+              Before sending your booking:
             </p>
 
-            <ol className="mt-2 list-inside list-decimal space-y-1 text-primary/80">
-              <li>Tap Send on WhatsApp.</li>
-              <li>Attach your payment screenshot.</li>
-              <li>Send the message.</li>
-              <li>Wait for Glow Spot BW to confirm your booking.</li>
+            <ol className="mt-2 list-inside list-decimal space-y-2 text-primary/80">
+              <li>
+                Tap <strong>Send on WhatsApp</strong>.
+              </li>
+
+              <li>
+                Attach your payment screenshot or receipt manually.
+              </li>
+
+              <li>
+                Send the WhatsApp message.
+              </li>
+
+              <li>
+                Wait for Glow Spot BW to confirm your appointment.
+              </li>
             </ol>
           </div>
 
-          <div className="mt-5 flex flex-wrap gap-3">
+          {/* WHATSAPP BUTTON */}
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <a
               href={waLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
             >
               <MessageCircle className="h-5 w-5" />
               Send on WhatsApp
@@ -674,37 +841,32 @@ function Book() {
             <button
               type="button"
               onClick={() => doCopy(summary)}
-              className="inline-flex items-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-sm text-primary"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-sm text-primary"
             >
               <Copy className="h-4 w-4" />
               Copy summary
             </button>
           </div>
 
-          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+          {/* BACK */}
+
+          <div className="mt-6">
             <button
               type="button"
               onClick={goBack}
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/40 px-6 py-3 text-sm text-primary"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-primary/40 px-6 py-3 text-sm text-primary sm:w-auto"
             >
               <ArrowLeft className="h-4 w-4" />
               Back
             </button>
-
-            <a
-              href={waLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
-            >
-              <CheckCircle2 className="h-4 w-4" />
-              Confirm booking on WhatsApp
-            </a>
           </div>
         </section>
       )}
 
-      {/* BOOKING SUMMARY */}
+      {/* =========================================================
+          BOOKING SUMMARY
+      ========================================================= */}
+
       <section className="mt-10 rounded-2xl border border-border bg-card p-5 shadow-soft">
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-display text-lg text-primary">
@@ -763,28 +925,37 @@ function Book() {
             </span>
 
             <span className="font-medium text-foreground">
-              BWP {Math.max(totalPrice - deposit, 0)}
+              BWP {remainingBalance}
             </span>
           </div>
         </div>
       </section>
 
-      {/* CANCELLATION */}
-      <section className="mt-12 rounded-2xl border border-border bg-secondary/30 p-5 text-sm text-muted-foreground">
+      {/* =========================================================
+          CANCELLATION
+      ========================================================= */}
+
+      <section className="mt-10 rounded-2xl border border-border bg-secondary/30 p-5 text-sm text-muted-foreground">
         <h3 className="font-display text-lg text-primary">
           Cancellation & reminders
         </h3>
 
-        <ul className="mt-2 list-inside list-disc space-y-1">
+        <ul className="mt-2 list-inside list-disc space-y-2">
           <li>Deposits are non-refundable.</li>
+
           <li>
             Rescheduling is allowed with sufficient notice (24h+).
           </li>
-          <li>Late cancellations may forfeit the deposit.</li>
+
           <li>
-            We send a friendly WhatsApp reminder 24 hours before
+            Late cancellations may forfeit the deposit.
+          </li>
+
+          <li>
+            A friendly WhatsApp reminder is sent 24 hours before
             your appointment.
           </li>
+
           <li>
             Appointments outside operating hours add BWP{" "}
             {AFTER_HOURS_FEE}.
@@ -794,6 +965,10 @@ function Book() {
     </div>
   );
 }
+
+/* ===============================================================
+   FIELD COMPONENT
+=============================================================== */
 
 function Field({
   label,
@@ -825,11 +1000,15 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-1 w-full rounded-xl border border-border bg-card p-3 text-base"
+        className="mt-2 w-full rounded-xl border border-border bg-card p-3 text-base outline-none focus:border-primary"
       />
     </div>
   );
 }
+
+/* ===============================================================
+   PAYMENT CARD
+=============================================================== */
 
 function PayCard({
   title,
@@ -862,11 +1041,12 @@ function PayCard({
           className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs text-primary"
         >
           <Copy className="h-3 w-3" />
+
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
 
-      <ul className="mt-2 space-y-1 text-sm text-foreground/80">
+      <ul className="mt-3 space-y-1 text-sm leading-5 text-foreground/80">
         {lines.map((line) => (
           <li key={line}>{line}</li>
         ))}
