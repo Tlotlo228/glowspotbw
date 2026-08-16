@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { GRADUATION_PACKAGES, WHATSAPP_NUMBER } from "@/lib/site-data";
+import { GRADUATION_PACKAGES, WHATSAPP_NUMBER, CALENDAR_URL } from "@/lib/site-data";
 
 export const Route = createFileRoute("/packages")({
   head: () => ({
@@ -85,6 +85,25 @@ function Packages() {
             </div>
           </section>
         ))}
+      </div>
+
+      {/* Calendar booking */}
+      <div className="mt-12">
+        <div className="mb-4 text-center">
+          <h3 className="font-display text-2xl text-primary">Book Your Grad Slot</h3>
+          <p className="mt-1 text-sm text-muted-foreground">Pick a date and time directly from the calendar below.</p>
+        </div>
+        <div className="overflow-hidden rounded-2xl border border-border shadow-soft">
+          <iframe
+            src={CALENDAR_URL}
+            style={{ border: 0 }}
+            width="100%"
+            height="600"
+            frameBorder="0"
+            title="Book a graduation appointment"
+            className="block w-full rounded-2xl"
+          />
+        </div>
       </div>
 
       <div className="mt-12 rounded-2xl glass p-6 text-center">
