@@ -301,3 +301,56 @@ export const BLOCKED_SLOTS: Record<string, string[]> = {
   "2026-07-17": ["09:00", "09:30", "10:00"],
   "2026-07-25": ["09:00", "09:30", "10:00", "10:30"],
 };
+// ── Class of 2026 Graduation Packages ─────────────────────────────────────
+export type GradPackageTier = {
+  price: number;
+  includes: string[];
+};
+
+export type GradPackage = {
+  id: string;
+  name: string;
+  vibe: string;
+  tiers: GradPackageTier[];
+};
+
+export const GRADUATION_PACKAGES: GradPackage[] = [
+  {
+    id: "glow-up-nails",
+    name: "1. Glow-Up Nails",
+    vibe: "Classy + Neat",
+    tiers: [
+      { price: 350, includes: ["Nail Combo", "Hands & Toes", "Plain / Frenchies"] },
+      { price: 420, includes: ["Complex Nail Combo", "Hands & Toes", "Complex designs"] },
+    ],
+  },
+  {
+    id: "she-did-it",
+    name: "2. She Did It",
+    vibe: "Main character + Dramatic",
+    tiers: [
+      { price: 400, includes: ["Makeup & Install", "Makeup with basic styling"] },
+      { price: 520, includes: ["Makeup & Lashes", "Basic styling & Individual"] },
+      { price: 450, includes: ["Makeup & Nails", "Makeup & Hands", "Plain / Frenchies"] },
+    ],
+  },
+  {
+    id: "tassel-glam",
+    name: "3. Tassel Glam",
+    vibe: "Flirty + Soft glam",
+    tiers: [
+      { price: 300, includes: ["Wig Install & Lashes", "Basic styling & Clusters"] },
+      { price: 460, includes: ["Wig Install & Lashes", "Basic styling & Individual"] },
+    ],
+  },
+  {
+    id: "drip-duo",
+    name: "4. Drip Duo",
+    vibe: "Baddie + Photo-Ready",
+    tiers: [
+      { price: 360, includes: ["Nails & Lashes", "Hands & Clusters", "Plain / Frenchies"] },
+      { price: 500, includes: ["Nails & Lashes", "Hands & Individuals", "Complex designs"] },
+    ],
+  },
+];
+
