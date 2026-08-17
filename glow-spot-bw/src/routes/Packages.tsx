@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { GRADUATION_PACKAGES, WHATSAPP_NUMBER, CALENDAR_URL } from "@/lib/site-data";
+import { createFileRoute } from "@tanstack/react-router";
+import { GRADUATION_PACKAGES, CALENDAR_URL } from "@/lib/site-data";
 
 export const Route = createFileRoute("/packages")({
   head: () => ({
@@ -22,8 +22,6 @@ const VIBE_COLORS: Record<string, string> = {
 };
 
 function Packages() {
-  const waBase = `https://wa.me/${WHATSAPP_NUMBER}?text=`;
-
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:py-16">
       <header className="text-center">
@@ -44,6 +42,7 @@ function Packages() {
         </div>
       </header>
 
+      {/* Packages */}
       <div className="mt-12 space-y-8">
         {GRADUATION_PACKAGES.map((pkg) => (
           <section key={pkg.id} className="overflow-hidden rounded-2xl glass">
@@ -64,7 +63,7 @@ function Packages() {
               {pkg.tiers.map((tier, i) => (
                 <div key={i} className="flex flex-col gap-3 p-5">
                   <p className="font-display text-xl text-primary">P{tier.price}</p>
-                  <ul className="space-y-1">
+                  <ul className="space-y-1 flex-1">
                     {tier.includes.map((item, j) => (
                       <li key={j} className="flex items-start gap-2 text-sm text-foreground/80">
                         <span className="mt-0.5 text-primary">✦</span>
@@ -72,14 +71,6 @@ function Packages() {
                       </li>
                     ))}
                   </ul>
-                  <a
-                    href={`${waBase}${encodeURIComponent(`Hi! I'd like to book the *${pkg.name}* grad package (P${tier.price}) — ${tier.includes.join(", ")}. 🎓`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-auto inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-soft transition hover:opacity-90"
-                  >
-                    Book via WhatsApp →
-                  </a>
                 </div>
               ))}
             </div>
@@ -87,44 +78,29 @@ function Packages() {
         ))}
       </div>
 
-      {/* Calendar booking */}
-      <div className="mt-12">
+      {/* How to book note */}
+      <div className="mt-8 rounded-2xl bg-accent/30 px-5 py-4 text-sm text-muted-foreground text-center">
+        💳 A <strong className="text-foreground">50% deposit</strong> is required to secure your appointment &nbsp;·&nbsp;
+        📍 <strong className="text-foreground">Main Mall, Opposite CCA</strong> &nbsp;·&nbsp;
+        💄 Makeup location to be announced
+      </div>
+
+      {/* Calendar */}
+      <div className="mt-10">
         <div className="mb-4 text-center">
           <h3 className="font-display text-2xl text-primary">Book Your Grad Slot</h3>
-          <p className="mt-1 text-sm text-muted-foreground">Pick a date and time directly from the calendar below.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Pick your date and time below — it's all done right here.</p>
         </div>
         <div className="overflow-hidden rounded-2xl border border-border shadow-soft">
           <iframe
             src={CALENDAR_URL}
             style={{ border: 0 }}
             width="100%"
-            height="600"
+            height="650"
             frameBorder="0"
             title="Book a graduation appointment"
-            className="block w-full rounded-2xl"
+            className="block w-full"
           />
-        </div>
-      </div>
-
-      <div className="mt-12 rounded-2xl glass p-6 text-center">
-        <h3 className="font-display text-xl text-primary">How to Book</h3>
-        <ul className="mx-auto mt-4 max-w-sm space-y-2 text-sm text-muted-foreground">
-          <li>💳 <strong className="text-foreground">50% deposit</strong> required to secure your appointment</li>
-          <li>📍 <strong className="text-foreground">Main Mall, Opposite CCA</strong></li>
-          <li>💄 Makeup session location to be announced</li>
-        </ul>
-        <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <a
-            href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi! I'd like to enquire about the Class of 2026 grad packages 🎓")}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground shadow-soft transition hover:opacity-90"
-          >
-            WhatsApp Us
-          </a>
-          <Link to="/book" className="rounded-full border border-primary/30 bg-background/60 px-6 py-2.5 text-sm text-primary backdrop-blur">
-            Book Online
-          </Link>
         </div>
       </div>
     </div>
