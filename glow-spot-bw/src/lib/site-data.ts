@@ -71,6 +71,10 @@ export const SERVICE_GROUPS: {
   group: string;
   services: Service[];
 }[] = [
+  // ============================================================
+  // MANICURE
+  // ============================================================
+
   {
     group: "Manicure",
     services: [
@@ -141,6 +145,10 @@ export const SERVICE_GROUPS: {
     ],
   },
 
+  // ============================================================
+  // PEDICURE
+  // ============================================================
+
   {
     group: "Pedicure",
     services: [
@@ -186,6 +194,179 @@ export const SERVICE_GROUPS: {
       },
     ],
   },
+
+  // ============================================================
+  // LASHES
+  // ============================================================
+
+  {
+    group: "Lashes",
+    services: [
+      {
+        id: "lash-classic-set",
+        name: "Classic Set",
+        description: "Classic individual lash extensions.",
+        price: 250,
+        minutes: 90,
+        duration: "≈ 1 hr 30",
+      },
+      {
+        id: "lash-wet-set",
+        name: "Wet Set",
+        description: "Sleek wet-look lash extensions.",
+        price: 280,
+        minutes: 90,
+        duration: "≈ 1 hr 30",
+      },
+      {
+        id: "lash-hybrid-set",
+        name: "Hybrid Set",
+        description: "Combination of classic and volume lashes.",
+        price: 320,
+        minutes: 105,
+        duration: "≈ 1 hr 45",
+      },
+      {
+        id: "lash-volume-set",
+        name: "Volume Set",
+        description: "Fuller volume lash extensions.",
+        price: 360,
+        minutes: 120,
+        duration: "≈ 2 hrs",
+      },
+      {
+        id: "lash-wispy-volume",
+        name: "Wispy Volume",
+        description: "Soft, textured and wispy volume lashes.",
+        price: 420,
+        minutes: 120,
+        duration: "≈ 2 hrs",
+      },
+      {
+        id: "lash-cluster",
+        name: "Cluster Lashes",
+        description: "Cluster lashes for a quick, fuller look.",
+        price: 150,
+        minutes: 45,
+        duration: "≈ 45 min",
+      },
+
+      // ----------------------------------------------------------
+      // 2 WEEK REFILLS
+      // ----------------------------------------------------------
+
+      {
+        id: "lash-refill-2wk-classic",
+        name: "2 Week Refill — Classic Set",
+        description: "Classic lash refill within 2 weeks.",
+        price: 120,
+        minutes: 60,
+        duration: "≈ 1 hr",
+      },
+      {
+        id: "lash-refill-2wk-wet",
+        name: "2 Week Refill — Wet Set",
+        description: "Wet set lash refill within 2 weeks.",
+        price: 140,
+        minutes: 60,
+        duration: "≈ 1 hr",
+      },
+      {
+        id: "lash-refill-2wk-hybrid",
+        name: "2 Week Refill — Hybrid Set",
+        description: "Hybrid lash refill within 2 weeks.",
+        price: 160,
+        minutes: 75,
+        duration: "≈ 1 hr 15",
+      },
+      {
+        id: "lash-refill-2wk-volume",
+        name: "2 Week Refill — Volume Set",
+        description: "Volume lash refill within 2 weeks.",
+        price: 180,
+        minutes: 75,
+        duration: "≈ 1 hr 15",
+      },
+      {
+        id: "lash-refill-2wk-wispy",
+        name: "2 Week Refill — Wispy Volume",
+        description: "Wispy volume refill within 2 weeks.",
+        price: 180,
+        minutes: 75,
+        duration: "≈ 1 hr 15",
+      },
+
+      // ----------------------------------------------------------
+      // 3 WEEK REFILLS
+      // ----------------------------------------------------------
+
+      {
+        id: "lash-refill-3wk-classic",
+        name: "3 Week Refill — Classic Set",
+        description: "Classic lash refill within 3 weeks.",
+        price: 140,
+        minutes: 60,
+        duration: "≈ 1 hr",
+      },
+      {
+        id: "lash-refill-3wk-wet",
+        name: "3 Week Refill — Wet Set",
+        description: "Wet set lash refill within 3 weeks.",
+        price: 160,
+        minutes: 60,
+        duration: "≈ 1 hr",
+      },
+      {
+        id: "lash-refill-3wk-hybrid",
+        name: "3 Week Refill — Hybrid Set",
+        description: "Hybrid lash refill within 3 weeks.",
+        price: 180,
+        minutes: 75,
+        duration: "≈ 1 hr 15",
+      },
+      {
+        id: "lash-refill-3wk-volume",
+        name: "3 Week Refill — Volume Set",
+        description: "Volume lash refill within 3 weeks.",
+        price: 200,
+        minutes: 75,
+        duration: "≈ 1 hr 15",
+      },
+      {
+        id: "lash-refill-3wk-wispy",
+        name: "3 Week Refill — Wispy Volume",
+        description: "Wispy volume refill within 3 weeks.",
+        price: 220,
+        minutes: 75,
+        duration: "≈ 1 hr 15",
+      },
+
+      // ----------------------------------------------------------
+      // LASH REMOVALS
+      // ----------------------------------------------------------
+
+      {
+        id: "lash-removal-individual",
+        name: "Lash Removal — All Individuals",
+        description: "Removal of individual lash extensions.",
+        price: 100,
+        minutes: 30,
+        duration: "≈ 30 min",
+      },
+      {
+        id: "lash-removal-clusters",
+        name: "Lash Removal — Clusters",
+        description: "Removal of cluster lashes.",
+        price: 50,
+        minutes: 20,
+        duration: "≈ 20 min",
+      },
+    ],
+  },
+
+  // ============================================================
+  // NAIL ART
+  // ============================================================
 
   {
     group: "Nail Art",
@@ -266,6 +447,10 @@ export const SERVICE_GROUPS: {
     ],
   },
 
+  // ============================================================
+  // SOAK OFF
+  // ============================================================
+
   {
     group: "Soak Off",
     services: [
@@ -295,6 +480,10 @@ export const SERVICE_GROUPS: {
       },
     ],
   },
+
+  // ============================================================
+  // MAKEUP & HAIR
+  // ============================================================
 
   {
     group: "Makeup & Hair",
@@ -446,6 +635,10 @@ export const SERVICE_GROUPS: {
   },
 ];
 
+// ============================================================
+// BOOKING SETTINGS
+// ============================================================
+
 export const MAX_BOOKING_MINUTES = 120;
 
 export const OPERATING_HOURS: Record<
@@ -461,6 +654,10 @@ export const OPERATING_HOURS: Record<
   6: { open: 9, close: 18 },
 };
 
+// ============================================================
+// HELPERS
+// ============================================================
+
 export function formatMinutes(total: number): string {
   const h = Math.floor(total / 60);
   const m = total % 60;
@@ -471,8 +668,16 @@ export function formatMinutes(total: number): string {
   return `${m} min`;
 }
 
+// ============================================================
+// ALL SERVICES
+// ============================================================
+
 export const ALL_SERVICES: Service[] =
   SERVICE_GROUPS.flatMap((g) => g.services);
+
+// ============================================================
+// ADD-ONS
+// ============================================================
 
 export const ADD_ONS = [
   {
@@ -497,6 +702,10 @@ export const ADD_ONS = [
   },
 ] as const;
 
+// ============================================================
+// CONTACT
+// ============================================================
+
 export const WHATSAPP_NUMBER = "26772541683";
 
 export const PHONE_DISPLAY = "+267 72 541 683";
@@ -505,6 +714,10 @@ export const INSTAGRAM_URL =
   "https://www.instagram.com/glowspot2861";
 
 export const INSTAGRAM_HANDLE = "@glowspot2861";
+
+// ============================================================
+// PAYMENTS
+// ============================================================
 
 export const DEPOSIT_AMOUNT = 100;
 
@@ -526,6 +739,10 @@ export const PAYMENT_DETAILS = {
     name: "Glow Spot BW",
   },
 };
+
+// ============================================================
+// BLOCKED SLOTS
+// ============================================================
 
 export const BLOCKED_SLOTS: Record<string, string[]> = {
   "2026-07-01": [
