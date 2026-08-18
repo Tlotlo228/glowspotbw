@@ -3,6 +3,76 @@
 // ============================================================
 
 // ============================================================
+// IMAGES
+// ============================================================
+
+const IMG = {
+  logo: "https://i.postimg.cc/y8sRt3qK/IMG-0742.jpg",
+
+  nailsNude: "https://i.postimg.cc/59sVcZQR/IMG-0741.jpg",
+  nailsZebra: "https://i.postimg.cc/qB55x03q/IMG-0740.jpg",
+  nailsFrench: "https://i.postimg.cc/v84ss07w/IMG-0739.jpg",
+  nailsGold: "https://i.postimg.cc/CKh367MX/IMG-0738.jpg",
+
+  lashes1: "https://i.postimg.cc/BZLdyXsD/IMG-0737.jpg",
+  lashes2: "https://i.postimg.cc/K8FwRfTQ/IMG-0735.jpg",
+
+  pedicure: "https://i.postimg.cc/gJfBdHdF/IMG-0446.png",
+
+  directions: "https://i.postimg.cc/L6k0KPWM/IMG-0732.jpg",
+};
+
+// ============================================================
+// GALLERY
+// ============================================================
+
+export const GALLERY = [
+  {
+    src: IMG.nailsNude,
+    alt: "Nude nail set",
+    category: "Nails",
+  },
+  {
+    src: IMG.nailsZebra,
+    alt: "Zebra French tip nail art",
+    category: "Nails",
+  },
+  {
+    src: IMG.nailsFrench,
+    alt: "Rose-gold nails with floral 3D art",
+    category: "Nails",
+  },
+  {
+    src: IMG.nailsGold,
+    alt: "Gold glitter ombre stiletto nails",
+    category: "Nails",
+  },
+  {
+    src: IMG.lashes1,
+    alt: "Volume lash extensions close-up",
+    category: "Lashes",
+  },
+  {
+    src: IMG.lashes2,
+    alt: "Wispy lash extension fan",
+    category: "Lashes",
+  },
+  {
+    src: IMG.pedicure,
+    alt: "Leopard French tip pedicure",
+    category: "Pedicure",
+  },
+] as const;
+
+export const GALLERY_CATEGORIES = [
+  "All",
+  "Nails",
+  "Lashes",
+  "Pedicure",
+  "Promos",
+] as const;
+
+// ============================================================
 // SERVICE TYPE
 // ============================================================
 
@@ -24,6 +94,7 @@ export const SERVICE_GROUPS: {
   group: string;
   services: Service[];
 }[] = [
+
   // ============================================================
   // MANICURE
   // ============================================================
@@ -47,6 +118,7 @@ export const SERVICE_GROUPS: {
         minutes: 90,
         duration: "≈ 1 hr 30",
       },
+
       {
         id: "polygel-overlay",
         name: "Polygel — Overlay / Natural",
@@ -63,6 +135,7 @@ export const SERVICE_GROUPS: {
         minutes: 105,
         duration: "≈ 1 hr 45",
       },
+
       {
         id: "acrylic-overlay",
         name: "Acrylic — Overlay / Natural",
@@ -79,6 +152,7 @@ export const SERVICE_GROUPS: {
         minutes: 120,
         duration: "≈ 2 hrs",
       },
+
       {
         id: "manicure-classic-french",
         name: "Classic French",
@@ -97,6 +171,7 @@ export const SERVICE_GROUPS: {
         minutes: 15,
         duration: "≈ 15 min add-on",
       },
+
       {
         id: "buff-shine",
         name: "Buff 'n Shine",
@@ -164,6 +239,7 @@ export const SERVICE_GROUPS: {
         minutes: 90,
         duration: "≈ 1 hr 30",
       },
+
       {
         id: "pedi-classic-french",
         name: "Classic French",
@@ -388,7 +464,7 @@ export const SERVICE_GROUPS: {
   },
 
   // ============================================================
-  // LASH REFILLS — 2 WEEKS
+  // LASH REFILLS
   // ============================================================
 
   {
@@ -436,10 +512,6 @@ export const SERVICE_GROUPS: {
       },
     ],
   },
-
-  // ============================================================
-  // LASH REFILLS — 3 WEEKS
-  // ============================================================
 
   {
     group: "Lash Refills — 3 Weeks",
@@ -538,6 +610,7 @@ export const SERVICE_GROUPS: {
         minutes: 120,
         duration: "≈ 2 hrs",
       },
+
       {
         id: "grad-she-did-it-400",
         name: "She Did It — Makeup & Install",
@@ -565,6 +638,7 @@ export const SERVICE_GROUPS: {
         minutes: 105,
         duration: "≈ 1 hr 45",
       },
+
       {
         id: "grad-tassel-300",
         name: "Tassel Glam — Clusters",
@@ -583,6 +657,7 @@ export const SERVICE_GROUPS: {
         minutes: 90,
         duration: "≈ 1 hr 30",
       },
+
       {
         id: "grad-drip-duo-360",
         name: "Drip Duo — Plain / Frenchies",
@@ -722,16 +797,8 @@ export const DEPOSIT_AMOUNT = 100;
 
 export const AFTER_HOURS_FEE = 70;
 
-// ============================================================
-// GOOGLE CALENDAR
-// ============================================================
-
 export const CALENDAR_URL =
   "https://calendar.google.com/calendar/appointments/schedules/AcZssZ1J7YZ_FMnOybCH-VCIOzWN6TSKioo39N2GQUW_k1VDqj40QK5cvBBi3actmEdZ-3-4B64BXTJO?gv=true";
-
-// ============================================================
-// PAYMENT DETAILS
-// ============================================================
 
 export const PAYMENT_DETAILS = {
   orangeMoney: {
@@ -825,6 +892,7 @@ export const GRADUATION_PACKAGES: GradPackage[] = [
     id: "glow-up-nails",
     name: "1. Glow-Up Nails",
     vibe: "Classy + Neat",
+
     tiers: [
       {
         serviceId: "grad-glow-up-350",
@@ -835,6 +903,7 @@ export const GRADUATION_PACKAGES: GradPackage[] = [
           "Plain / Frenchies",
         ],
       },
+
       {
         serviceId: "grad-glow-up-420",
         price: 420,
@@ -851,6 +920,7 @@ export const GRADUATION_PACKAGES: GradPackage[] = [
     id: "she-did-it",
     name: "2. She Did It",
     vibe: "Main character + Dramatic",
+
     tiers: [
       {
         serviceId: "grad-she-did-it-400",
@@ -860,6 +930,7 @@ export const GRADUATION_PACKAGES: GradPackage[] = [
           "Makeup with basic styling",
         ],
       },
+
       {
         serviceId: "grad-she-did-it-520",
         price: 520,
@@ -868,6 +939,7 @@ export const GRADUATION_PACKAGES: GradPackage[] = [
           "Basic styling & Individual",
         ],
       },
+
       {
         serviceId: "grad-she-did-it-450",
         price: 450,
@@ -884,6 +956,7 @@ export const GRADUATION_PACKAGES: GradPackage[] = [
     id: "tassel-glam",
     name: "3. Tassel Glam",
     vibe: "Flirty + Soft glam",
+
     tiers: [
       {
         serviceId: "grad-tassel-300",
@@ -893,6 +966,7 @@ export const GRADUATION_PACKAGES: GradPackage[] = [
           "Basic styling & Clusters",
         ],
       },
+
       {
         serviceId: "grad-tassel-460",
         price: 460,
@@ -908,6 +982,7 @@ export const GRADUATION_PACKAGES: GradPackage[] = [
     id: "drip-duo",
     name: "4. Drip Duo",
     vibe: "Baddie + Photo-Ready",
+
     tiers: [
       {
         serviceId: "grad-drip-duo-360",
@@ -918,6 +993,7 @@ export const GRADUATION_PACKAGES: GradPackage[] = [
           "Plain / Frenchies",
         ],
       },
+
       {
         serviceId: "grad-drip-duo-500",
         price: 500,
