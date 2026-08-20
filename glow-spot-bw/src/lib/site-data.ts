@@ -799,17 +799,17 @@ export const CALENDAR_URL =
 export const PAYMENT_DETAILS = {
   orangeMoney: {
     name: "Glow Spot BW",
-    number: "+267 72 541 683",
+    number: "72541683",
   },
 
   bank: {
     bank: "First National Bank Botswana",
-    account: "62812345678",
-    branch: "Main Mall",
+    account: "63138523435",
+    branch: "Broadhurst Industrial",
+    branchNumber: "281267",
     name: "Glow Spot BW",
   },
 };
-
 // ============================================================
 // BLOCKED SLOTS
 // ============================================================
