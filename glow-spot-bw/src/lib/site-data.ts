@@ -9,7 +9,6 @@
 const IMG = {
   logo: "https://i.postimg.cc/y8sRt3qK/IMG-0742.jpg",
 
-
   nailsZebra: "https://i.postimg.cc/qB55x03q/IMG-0740.jpg",
   nailsFrench: "https://i.postimg.cc/v84ss07w/IMG-0739.jpg",
   nailsGold: "https://i.postimg.cc/CKh367MX/IMG-0738.jpg",
@@ -27,7 +26,6 @@ const IMG = {
 // ============================================================
 
 export const GALLERY = [
-
   {
     src: IMG.nailsZebra,
     alt: "Zebra French tip nail art",
@@ -50,7 +48,7 @@ export const GALLERY = [
   },
   {
     src: IMG.lashes2,
-    alt: "Wispy lash extension fan",
+    alt: "Lash extension fan",
     category: "Lashes",
   },
   {
@@ -114,7 +112,6 @@ export const SERVICE_GROUPS: {
         minutes: 90,
         duration: "≈ 1 hr 30",
       },
-
       {
         id: "polygel-overlay",
         name: "Polygel — Overlay / Natural",
@@ -131,7 +128,6 @@ export const SERVICE_GROUPS: {
         minutes: 105,
         duration: "≈ 1 hr 45",
       },
-
       {
         id: "acrylic-overlay",
         name: "Acrylic — Overlay / Natural",
@@ -148,7 +144,6 @@ export const SERVICE_GROUPS: {
         minutes: 120,
         duration: "≈ 2 hrs",
       },
-
       {
         id: "manicure-classic-french",
         name: "Classic French",
@@ -167,7 +162,6 @@ export const SERVICE_GROUPS: {
         minutes: 15,
         duration: "≈ 15 min add-on",
       },
-
       {
         id: "buff-shine",
         name: "Buff 'n Shine",
@@ -235,7 +229,6 @@ export const SERVICE_GROUPS: {
         minutes: 90,
         duration: "≈ 1 hr 30",
       },
-
       {
         id: "pedi-classic-french",
         name: "Classic French",
@@ -441,12 +434,12 @@ export const SERVICE_GROUPS: {
         duration: "≈ 2 hrs",
       },
       {
-        id: "lash-wispy-volume",
-        name: "Wispy Volume",
-        description: "Soft, textured and wispy volume lashes.",
-        price: 420,
-        minutes: 120,
-        duration: "≈ 2 hrs",
+        id: "lash-fluffy-meg-vol-clusters",
+        name: "Fluffy/Meg Vol Clusters",
+        description: "Fluffy meg volume cluster lashes.",
+        price: 200,
+        minutes: 60,
+        duration: "≈ 1 hr",
       },
       {
         id: "lash-cluster",
@@ -498,14 +491,6 @@ export const SERVICE_GROUPS: {
         minutes: 75,
         duration: "≈ 1 hr 15",
       },
-      {
-        id: "lash-refill-2wk-wispy",
-        name: "Wispy Volume",
-        description: "2-week refill.",
-        price: 180,
-        minutes: 75,
-        duration: "≈ 1 hr 15",
-      },
     ],
   },
 
@@ -541,14 +526,6 @@ export const SERVICE_GROUPS: {
         name: "Volume Set",
         description: "3-week refill.",
         price: 200,
-        minutes: 75,
-        duration: "≈ 1 hr 15",
-      },
-      {
-        id: "lash-refill-3wk-wispy",
-        name: "Wispy Volume",
-        description: "3-week refill.",
-        price: 220,
         minutes: 75,
         duration: "≈ 1 hr 15",
       },
@@ -606,7 +583,6 @@ export const SERVICE_GROUPS: {
         minutes: 120,
         duration: "≈ 2 hrs",
       },
-
       {
         id: "grad-she-did-it-400",
         name: "She Did It — Makeup & Install",
@@ -634,7 +610,6 @@ export const SERVICE_GROUPS: {
         minutes: 105,
         duration: "≈ 1 hr 45",
       },
-
       {
         id: "grad-tassel-300",
         name: "Tassel Glam — Clusters",
@@ -653,7 +628,6 @@ export const SERVICE_GROUPS: {
         minutes: 90,
         duration: "≈ 1 hr 30",
       },
-
       {
         id: "grad-drip-duo-360",
         name: "Drip Duo — Plain / Frenchies",
@@ -810,6 +784,7 @@ export const PAYMENT_DETAILS = {
     name: "Glow Spot BW",
   },
 };
+
 // ============================================================
 // BLOCKED SLOTS
 // ============================================================
