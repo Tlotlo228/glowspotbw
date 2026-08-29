@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Star, Sparkles, ShieldCheck, Clock } from "lucide-react";
 import { GALLERY, SERVICE_GROUPS } from "@/lib/site-data";
-const logo = { url: "/images/logo.jpg" };
-const hero = { url: "/images/nails-gold.jpg" };
+const logo = { url: "/IMG_0434.jpeg" };
+const hero = { url: "/IMG_2509.jpeg" };
 
 export const Route = createFileRoute("/")({
   head: () => ({
