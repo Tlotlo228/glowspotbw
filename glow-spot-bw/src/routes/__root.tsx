@@ -14,7 +14,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { GRADUATION_PACKAGES } from "@/lib/site-data";
 
-const logo = { url: "/images/logo.jpg" };
+const logo = { url: "/IMG_0434.jpeg" };
 
 function NotFoundComponent() {
   return (
