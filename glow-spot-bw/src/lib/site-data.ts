@@ -1,4 +1,4 @@
-// ============================================================
+/// ============================================================
 // GLOW SPOT BW — SITE DATA
 // ============================================================
 
@@ -6,19 +6,24 @@
 // IMAGES
 // ============================================================
 
+import logoImg from "../assets/gallery/logo.jpeg";
+import nailsZebraImg from "../assets/gallery/nails-zebra.jpeg";
+import nailsFrenchImg from "../assets/gallery/nails-french.jpeg";
+import nailsGoldImg from "../assets/gallery/nails-gold.jpeg";
+import lashes1Img from "../assets/gallery/lashes-1.jpeg";
+import lashes2Img from "../assets/gallery/lashes-2.jpeg";
+import pedicureImg from "../assets/gallery/pedicure.jpeg";
+import directionsImg from "../assets/gallery/directions.png";
+
 const IMG = {
-  logo: "https://i.postimg.cc/y8sRt3qK/IMG-0742.jpg",
-
-  nailsZebra: "https://i.postimg.cc/qB55x03q/IMG-0740.jpg",
-  nailsFrench: "https://i.postimg.cc/v84ss07w/IMG-0739.jpg",
-  nailsGold: "https://i.postimg.cc/CKh367MX/IMG-0738.jpg",
-
-  lashes1: "https://i.postimg.cc/BZLdyXsD/IMG-0737.jpg",
-  lashes2: "https://i.postimg.cc/K8FwRfTQ/IMG-0735.jpg",
-
-  pedicure: "https://i.postimg.cc/gJfBdHdF/IMG-0446.png",
-
-  directions: "https://i.postimg.cc/L6k0KPWM/IMG-0732.jpg",
+  logo: logoImg,
+  nailsZebra: nailsZebraImg,
+  nailsFrench: nailsFrenchImg,
+  nailsGold: nailsGoldImg,
+  lashes1: lashes1Img,
+  lashes2: lashes2Img,
+  pedicure: pedicureImg,
+  directions: directionsImg,
 };
 
 // ============================================================
