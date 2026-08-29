@@ -7,14 +7,18 @@
 // ============================================================
 
 const IMG = {
-  logo: "/__l5e/assets-v1/c8b8eee6-5c32-4dea-bc51-8134bec9a597/logo.jpeg",
-  nailsZebra: "/__l5e/assets-v1/8d80fa72-d315-4d27-9003-7b4ff045af77/nails-zebra.jpeg",
-  nailsFrench: "/__l5e/assets-v1/076d8b4a-ecab-425c-bc7f-99037858a6f2/nails-french.jpeg",
-  nailsGold: "/__l5e/assets-v1/84e4971e-d2b0-46a7-bcad-3a84e58c5bba/nails-gold.jpeg",
-  lashes1: "/__l5e/assets-v1/d181b86d-31b8-453d-983b-b9574f45a503/lashes-1.jpeg",
-  lashes2: "/__l5e/assets-v1/c0aaa620-102b-4b90-b059-8d17d9dc628e/lashes-2.jpeg",
-  pedicure: "/__l5e/assets-v1/47063d3a-c491-4adb-a098-4fdc1bd79285/pedicure.jpeg",
-  directions: "/__l5e/assets-v1/8d2892af-f392-40b4-90ac-2b7d1cc7022a/directions.png",
+  logo: "/images/logo.jpg",
+
+  nailsZebra: "/images/nails-zebra.jpg",
+  nailsFrench: "/images/nails-french.jpg",
+  nailsGold: "/images/nails-gold.jpg",
+
+  lashes1: "/images/lashes-1.jpg",
+  lashes2: "/images/lashes-1.jpg", // TODO: replace with a second lash photo
+
+  pedicure: "/images/pedicure.jpg",
+
+  directions: "https://i.postimg.cc/L6k0KPWM/IMG-0732.jpg", // TODO: replace with your directions/map screenshot
 };
 
 // ============================================================
@@ -973,4 +977,3 @@ export const GRADUATION_PACKAGES: GradPackage[] = [
     ],
   },
 ];
-
