@@ -1,11 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Star, Sparkles, ShieldCheck, Clock } from "lucide-react";
 import { GALLERY, SERVICE_GROUPS } from "@/lib/site-data";
-import logoImg from "../assets/gallery/logo.jpeg";
-import nailsGoldImg from "../assets/gallery/nails-gold.jpeg";
 
-const logo = { url: logoImg };
-const hero = { url: nailsGoldImg };
+const logo = { url: "/__l5e/assets-v1/c8b8eee6-5c32-4dea-bc51-8134bec9a597/logo.jpeg" };
+const hero = { url: "/__l5e/assets-v1/84e4971e-d2b0-46a7-bcad-3a84e58c5bba/nails-gold.jpeg" };
 
 export const Route = createFileRoute("/")({
   head: () => ({
