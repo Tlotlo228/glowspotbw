@@ -1,8 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Star, Sparkles, ShieldCheck, Clock } from "lucide-react";
 import { GALLERY, SERVICE_GROUPS } from "@/lib/site-data";
-const logo = { url: "https://i.postimg.cc/y8sRt3qK/IMG-0742.jpg" };
-const hero = { url: "https://i.postimg.cc/CKh367MX/IMG-0738.jpg" };
+import logoImg from "../assets/gallery/logo.jpeg";
+import nailsGoldImg from "../assets/gallery/nails-gold.jpeg";
+
+const logo = { url: logoImg };
+const hero = { url: nailsGoldImg };
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -116,7 +119,7 @@ function Home() {
             {[...Array(5)].map((_, i) => <Star key={i} className="h-5 w-5 fill-current" />)}
           </div>
           <blockquote className="mx-auto mt-4 max-w-2xl font-display text-xl text-primary sm:text-2xl">
-            “Glow Spot BW is the only place I trust with my nails. Always neat, always on time, always beautiful.”
+            "Glow Spot BW is the only place I trust with my nails. Always neat, always on time, always beautiful."
           </blockquote>
           <p className="mt-3 text-sm text-muted-foreground">— Tumi K., regular client</p>
           <Link to="/reviews" className="mt-6 inline-flex rounded-full border border-primary/30 px-5 py-2 text-sm text-primary">Read all reviews</Link>
