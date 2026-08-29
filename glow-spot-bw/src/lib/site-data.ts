@@ -1,4 +1,4 @@
-/// ============================================================
+// ============================================================
 // GLOW SPOT BW — SITE DATA
 // ============================================================
 
@@ -6,24 +6,15 @@
 // IMAGES
 // ============================================================
 
-import logoImg from "../assets/gallery/logo.jpeg";
-import nailsZebraImg from "../assets/gallery/nails-zebra.jpeg";
-import nailsFrenchImg from "../assets/gallery/nails-french.jpeg";
-import nailsGoldImg from "../assets/gallery/nails-gold.jpeg";
-import lashes1Img from "../assets/gallery/lashes-1.jpeg";
-import lashes2Img from "../assets/gallery/lashes-2.jpeg";
-import pedicureImg from "../assets/gallery/pedicure.jpeg";
-import directionsImg from "../assets/gallery/directions.png";
-
 const IMG = {
-  logo: logoImg,
-  nailsZebra: nailsZebraImg,
-  nailsFrench: nailsFrenchImg,
-  nailsGold: nailsGoldImg,
-  lashes1: lashes1Img,
-  lashes2: lashes2Img,
-  pedicure: pedicureImg,
-  directions: directionsImg,
+  logo: "/__l5e/assets-v1/c8b8eee6-5c32-4dea-bc51-8134bec9a597/logo.jpeg",
+  nailsZebra: "/__l5e/assets-v1/8d80fa72-d315-4d27-9003-7b4ff045af77/nails-zebra.jpeg",
+  nailsFrench: "/__l5e/assets-v1/076d8b4a-ecab-425c-bc7f-99037858a6f2/nails-french.jpeg",
+  nailsGold: "/__l5e/assets-v1/84e4971e-d2b0-46a7-bcad-3a84e58c5bba/nails-gold.jpeg",
+  lashes1: "/__l5e/assets-v1/d181b86d-31b8-453d-983b-b9574f45a503/lashes-1.jpeg",
+  lashes2: "/__l5e/assets-v1/c0aaa620-102b-4b90-b059-8d17d9dc628e/lashes-2.jpeg",
+  pedicure: "/__l5e/assets-v1/47063d3a-c491-4adb-a098-4fdc1bd79285/pedicure.jpeg",
+  directions: "/__l5e/assets-v1/8d2892af-f392-40b4-90ac-2b7d1cc7022a/directions.png",
 };
 
 // ============================================================
@@ -982,3 +973,4 @@ export const GRADUATION_PACKAGES: GradPackage[] = [
     ],
   },
 ];
+
