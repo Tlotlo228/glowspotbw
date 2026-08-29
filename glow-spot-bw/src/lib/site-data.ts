@@ -7,16 +7,16 @@
 // ============================================================
 
 const IMG = {
-  logo: "/images/logo.jpg",
+  logo: "/IMG_0434.jpeg",
 
-  nailsZebra: "/images/nails-zebra.jpg",
-  nailsFrench: "/images/nails-french.jpg",
-  nailsGold: "/images/nails-gold.jpg",
+  nailsZebra: "/IMG_2510.jpeg",
+  nailsFrench: "/IMG_2511.jpeg",
+  nailsGold: "/IMG_2509.jpeg",
 
-  lashes1: "/images/lashes-1.jpg",
-  lashes2: "/images/lashes-1.jpg", // TODO: replace with a second lash photo
+  lashes1: "/IMG_2507.jpeg",
+  lashes2: "/IMG_2507.jpeg", // TODO: replace with a second lash photo
 
-  pedicure: "/images/pedicure.jpg",
+  pedicure: "/IMG_2508.jpeg",
 
   directions: "https://i.postimg.cc/L6k0KPWM/IMG-0732.jpg", // TODO: replace with your directions/map screenshot
 };
