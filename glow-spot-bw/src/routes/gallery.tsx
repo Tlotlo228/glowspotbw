@@ -50,7 +50,7 @@ function Gallery() {
             className="mb-3 block w-full overflow-hidden rounded-2xl break-inside-avoid"
             aria-label={`Open ${g.alt}`}
           >
-            <img src={g.src} alt={g.alt} loading="lazy" className="w-full transition duration-500 hover:scale-105" />
+            <img src={g.src} alt={g.alt} className="w-full transition duration-500 hover:scale-105" />
           </button>
         ))}
       </div>
