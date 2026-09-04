@@ -8,7 +8,6 @@ import {
   MessageCircle,
   Clock,
   Plus,
-  X,
   CalendarDays,
   ArrowRight,
   ArrowLeft,
@@ -77,15 +76,16 @@ function Book() {
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [calendarLive, setCalendarLive] = useState(false);
+  const [bookingConfirmed, setBookingConfirmed] = useState(false);
 
   /*
     BOOKING FLOW
 
     1 = Services
     2 = Calendar / Slot
-    3 = Deposit
-    4 = Details
-    5 = WhatsApp
+    3 = Details
+    4 = WhatsApp
+    5 = Deposit
   */
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -276,9 +276,9 @@ function Book() {
         {[
           { number: 1, label: "Services" },
           { number: 2, label: "Slot" },
-          { number: 3, label: "Deposit" },
-          { number: 4, label: "Details" },
-          { number: 5, label: "WhatsApp" },
+          { number: 3, label: "Details" },
+          { number: 4, label: "WhatsApp" },
+          { number: 5, label: "Deposit" },
         ].map((step) => (
           <button
             key={step.number}
@@ -539,7 +539,7 @@ function Book() {
 
             <p className="mt-1 text-primary/80">
               Once you have chosen your date and time in the
-              calendar, continue to the deposit payment instructions.
+              calendar, continue to your details before confirming through WhatsApp.
             </p>
           </div>
 
@@ -557,11 +557,11 @@ function Book() {
 
             <button
               type="button"
-              onClick={goNext}
+              onClick={() => setBookingConfirmed(true)}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
             >
-              Continue to deposit
-              <ArrowRight className="h-4 w-4" />
+              Continue to details
+              <CheckCircle2 className="h-4 w-4" />
             </button>
           </div>
         </section>
@@ -571,10 +571,10 @@ function Book() {
           STEP 3 — DEPOSIT
       ========================================================= */}
 
-      {currentStep === 3 && (
+      {currentStep === 5 && (
         <section className="mt-10">
           <h2 className="font-display text-2xl text-primary">
-            Step 3 — Pay your BWP {DEPOSIT_AMOUNT} deposit
+            Step 5 — Pay your BWP {DEPOSIT_AMOUNT} deposit
           </h2>
 
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
@@ -655,7 +655,7 @@ function Book() {
               onClick={goNext}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
             >
-              Continue to details
+              Confirm booking
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
@@ -666,10 +666,10 @@ function Book() {
           STEP 4 — DETAILS
       ========================================================= */}
 
-      {currentStep === 4 && (
+      {currentStep === 3 && (
         <section className="mt-10">
           <h2 className="font-display text-2xl text-primary">
-            Step 4 — Your details
+            Step 3 — Your details
           </h2>
 
           <p className="mt-1 text-sm text-muted-foreground">
@@ -758,7 +758,7 @@ function Book() {
               disabled={!name.trim() || !phone.trim()}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Review WhatsApp
+              Continue to WhatsApp
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
@@ -769,7 +769,7 @@ function Book() {
           STEP 5 — WHATSAPP
       ========================================================= */}
 
-      {currentStep === 5 && (
+      {currentStep === 4 && (
         <section className="mt-10">
           <div className="text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground">
@@ -777,7 +777,7 @@ function Book() {
             </div>
 
             <h2 className="mt-5 font-display text-2xl text-primary">
-              Step 5 — Confirm on WhatsApp
+              Step 4 — Confirm on WhatsApp
             </h2>
 
             <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
@@ -848,6 +848,19 @@ function Book() {
             </button>
           </div>
 
+          {/* CONTINUE TO DEPOSIT */}
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={goNext}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
+            >
+              Continue to deposit
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+
           {/* BACK */}
 
           <div className="mt-6">
@@ -860,6 +873,27 @@ function Book() {
               Back
             </button>
           </div>
+        </section>
+      )}
+
+      {bookingConfirmed && (
+        <section className="mt-10 rounded-2xl border border-primary/30 bg-primary/5 p-6 text-center shadow-soft" role="status" aria-live="polite">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground">
+            <CheckCircle2 className="h-7 w-7" />
+          </div>
+
+          <h2 className="mt-4 font-display text-2xl text-primary">
+            Booking confirmation received!
+          </h2>
+
+          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
+            Thank you, {name || "your booking"}. Your booking details have been completed on the website.
+            Please make sure your deposit has been paid and your payment proof has been sent in the Glow Spot BW WhatsApp chat.
+          </p>
+
+          <p className="mt-4 text-xs text-primary/80">
+            Glow Spot BW will review your request and confirm your appointment.
+          </p>
         </section>
       )}
 
