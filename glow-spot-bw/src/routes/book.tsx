@@ -36,7 +36,7 @@ export const Route = createFileRoute("/book")({
       {
         name: "description",
         content:
-          "Book your appointment at Glow Spot BW Gaborone. Select multiple services, choose your appointment slot, pay your deposit and confirm through WhatsApp.",
+          "Book your appointment at Glow Spot BW Gaborone. Select multiple services, choose your appointment slot, provide your details, confirm through WhatsApp and pay your deposit.",
       },
       {
         property: "og:title",
@@ -62,6 +62,15 @@ function doCopy(text: string) {
 const HOURS_TEXT =
   "Tue–Sat 09:00–18:00 · Sun 11:00–17:00 · Mon closed";
 
+const STEPS = [
+  { number: 1, label: "Services" },
+  { number: 2, label: "Slot" },
+  { number: 3, label: "Details" },
+  { number: 4, label: "WhatsApp" },
+  { number: 5, label: "Deposit" },
+  { number: 6, label: "Confirmed" },
+] as const;
+
 function Book() {
   const { service } = Route.useSearch();
 
@@ -82,11 +91,13 @@ function Book() {
     BOOKING FLOW
 
     1 = Services
-    2 = Calendar / Slot
+    2 = Booking Slot
     3 = Details
     4 = WhatsApp
     5 = Deposit
+    6 = Confirmation
   */
+
   const [currentStep, setCurrentStep] = useState(1);
 
   const selectedServices = useMemo(
@@ -117,7 +128,6 @@ function Book() {
   function toggleService(id: string) {
     setSelectedIds((prev) => {
       if (prev.includes(id)) {
-        // Always keep at least one service selected.
         if (prev.length === 1) {
           return prev;
         }
@@ -149,9 +159,7 @@ function Book() {
 
     lines.push("");
 
-    lines.push(
-      `Total: BWP ${totalPrice}`,
-    );
+    lines.push(`Total: BWP ${totalPrice}`);
 
     lines.push(
       `Duration: ${formatMinutes(totalMinutes)}`,
@@ -203,10 +211,6 @@ function Book() {
     summary,
   )}`;
 
-  /*
-    Scroll instantly to the top when changing steps.
-    This prevents the long smooth-scroll effect on mobile.
-  */
   function scrollToTop() {
     window.scrollTo({
       top: 0,
@@ -216,7 +220,7 @@ function Book() {
   }
 
   function goNext() {
-    setCurrentStep((step) => Math.min(step + 1, 5));
+    setCurrentStep((step) => Math.min(step + 1, 6));
 
     requestAnimationFrame(() => {
       scrollToTop();
@@ -232,7 +236,7 @@ function Book() {
   }
 
   function goToStep(step: number) {
-    if (step <= currentStep) {
+    if (step <= currentStep && !bookingConfirmed) {
       setCurrentStep(step);
 
       requestAnimationFrame(() => {
@@ -241,8 +245,18 @@ function Book() {
     }
   }
 
+  function confirmBooking() {
+    setBookingConfirmed(true);
+    setCurrentStep(6);
+
+    requestAnimationFrame(() => {
+      scrollToTop();
+    });
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
+
       {/* =========================================================
           HEADER
       ========================================================= */}
@@ -257,9 +271,9 @@ function Book() {
         </h1>
 
         <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-          Choose your services first, select your appointment slot,
-          pay your deposit, provide your details and confirm through
-          WhatsApp.
+          Choose your services, select your appointment slot,
+          provide your details, confirm through WhatsApp and
+          complete your deposit.
         </p>
 
         <p className="mx-auto mt-4 inline-flex flex-wrap items-center justify-center gap-2 rounded-full bg-secondary/60 px-4 py-2 text-xs text-primary/80">
@@ -272,19 +286,16 @@ function Book() {
           PROGRESS STEPS
       ========================================================= */}
 
-      <div className="mt-8 grid grid-cols-5 gap-1 sm:gap-2">
-        {[
-          { number: 1, label: "Services" },
-          { number: 2, label: "Slot" },
-          { number: 3, label: "Details" },
-          { number: 4, label: "WhatsApp" },
-          { number: 5, label: "Deposit" },
-        ].map((step) => (
+      <div className="mt-8 grid grid-cols-6 gap-1 sm:gap-2">
+        {STEPS.map((step) => (
           <button
             key={step.number}
             type="button"
             onClick={() => goToStep(step.number)}
-            disabled={step.number > currentStep}
+            disabled={
+              step.number > currentStep ||
+              bookingConfirmed
+            }
             className={`rounded-xl px-1 py-2.5 text-center transition ${
               currentStep === step.number
                 ? "bg-primary text-primary-foreground"
@@ -297,7 +308,7 @@ function Book() {
               {step.number}
             </span>
 
-            <span className="mt-0.5 block text-[10px] sm:text-xs">
+            <span className="mt-0.5 block text-[9px] sm:text-xs">
               {step.label}
             </span>
           </button>
@@ -378,8 +389,6 @@ function Book() {
             })}
           </div>
 
-          {/* SELECTED SERVICES SUMMARY */}
-
           <div className="mt-5 rounded-2xl bg-secondary/60 p-4">
             <div className="flex items-center justify-between gap-4">
               <div>
@@ -405,8 +414,6 @@ function Book() {
             </div>
           </div>
 
-          {/* NEXT */}
-
           <div className="mt-6 flex justify-end">
             <button
               type="button"
@@ -422,7 +429,7 @@ function Book() {
       )}
 
       {/* =========================================================
-          STEP 2 — CALENDAR / SLOT
+          STEP 2 — BOOKING SLOT
       ========================================================= */}
 
       {currentStep === 2 && (
@@ -440,8 +447,6 @@ function Book() {
             and unavailable appointment slots are handled by the
             booking calendar.
           </p>
-
-          {/* SELECTED SERVICES REMINDER */}
 
           <div className="mt-5 rounded-2xl border border-primary/20 bg-primary/5 p-4">
             <div className="flex items-center justify-between gap-3">
@@ -462,8 +467,6 @@ function Book() {
               </p>
             </div>
           </div>
-
-          {/* GOOGLE CALENDAR */}
 
           <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-background shadow-soft">
             <div className="relative min-h-[520px] sm:min-h-[700px]">
@@ -530,8 +533,6 @@ function Book() {
             </div>
           </div>
 
-          {/* INFO */}
-
           <div className="mt-5 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm text-primary">
             <p className="font-medium">
               Your services are already selected.
@@ -539,11 +540,9 @@ function Book() {
 
             <p className="mt-1 text-primary/80">
               Once you have chosen your date and time in the
-              calendar, continue to your details before confirming through WhatsApp.
+              calendar, continue to your details.
             </p>
           </div>
-
-          {/* NAVIGATION */}
 
           <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
             <button
@@ -557,105 +556,10 @@ function Book() {
 
             <button
               type="button"
-              onClick={() => setBookingConfirmed(true)}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
-            >
-              Continue to details
-              <CheckCircle2 className="h-4 w-4" />
-            </button>
-          </div>
-        </section>
-      )}
-
-      {/* =========================================================
-          STEP 3 — DEPOSIT
-      ========================================================= */}
-
-      {currentStep === 5 && (
-        <section className="mt-10">
-          <h2 className="font-display text-2xl text-primary">
-            Step 5 — Pay your BWP {DEPOSIT_AMOUNT} deposit
-          </h2>
-
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            A BWP {DEPOSIT_AMOUNT} deposit is required before your
-            booking can be confirmed. The remaining balance is paid
-            at the studio.
-          </p>
-
-          <div className="mt-5 rounded-2xl p-5 glass shadow-soft">
-            <div className="flex items-baseline justify-between gap-4">
-              <p className="text-sm text-muted-foreground">
-                Deposit required
-              </p>
-
-              <p className="font-display text-3xl text-primary">
-                BWP {deposit}
-              </p>
-            </div>
-
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <PayCard
-                title="Orange Money"
-                lines={[
-                  `Name: ${PAYMENT_DETAILS.orangeMoney.name}`,
-                  `Number: ${PAYMENT_DETAILS.orangeMoney.number}`,
-                ]}
-                copyText={
-                  PAYMENT_DETAILS.orangeMoney.number
-                }
-              />
-
-              <PayCard
-                title="Bank Transfer (FNB Botswana)"
-                lines={[
-                  `Account name: ${PAYMENT_DETAILS.bank.name}`,
-                  `Account no.: ${PAYMENT_DETAILS.bank.account}`,
-                  `Branch: ${PAYMENT_DETAILS.bank.branch}`,
-                ]}
-                copyText={PAYMENT_DETAILS.bank.account}
-              />
-            </div>
-
-            <p className="mt-4 text-xs leading-5 text-muted-foreground">
-              Use your full name as the payment reference. The
-              remaining balance is paid at the studio on the day of
-              your appointment.
-            </p>
-          </div>
-
-          {/* MANUAL PROOF INSTRUCTION */}
-
-          <div className="mt-5 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
-            <p className="font-medium text-primary">
-              Payment proof
-            </p>
-
-            <p className="mt-1 leading-6 text-primary/80">
-              After making your deposit, send your payment screenshot
-              or receipt manually through WhatsApp during the final
-              step. There is no payment-proof upload on this website.
-            </p>
-          </div>
-
-          {/* NAVIGATION */}
-
-          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-            <button
-              type="button"
-              onClick={goBack}
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/40 px-6 py-3 text-sm text-primary"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </button>
-
-            <button
-              type="button"
               onClick={goNext}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
             >
-              Confirm booking
+              Continue to details
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
@@ -663,7 +567,7 @@ function Book() {
       )}
 
       {/* =========================================================
-          STEP 4 — DETAILS
+          STEP 3 — DETAILS
       ========================================================= */}
 
       {currentStep === 3 && (
@@ -726,8 +630,6 @@ function Book() {
             />
           </div>
 
-          {/* MANUAL PROOF */}
-
           <div className="mt-5 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 p-4 text-sm">
             <p className="font-display text-base text-primary">
               Payment proof is sent manually
@@ -739,8 +641,6 @@ function Book() {
               directly in the chat.
             </p>
           </div>
-
-          {/* NAVIGATION */}
 
           <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
             <button
@@ -766,7 +666,7 @@ function Book() {
       )}
 
       {/* =========================================================
-          STEP 5 — WHATSAPP
+          STEP 4 — WHATSAPP
       ========================================================= */}
 
       {currentStep === 4 && (
@@ -787,8 +687,6 @@ function Book() {
             </p>
           </div>
 
-          {/* SUMMARY */}
-
           <div className="mt-5 rounded-2xl border border-border bg-secondary/50 p-4">
             <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-primary">
               Booking summary
@@ -798,8 +696,6 @@ function Book() {
               {summary}
             </pre>
           </div>
-
-          {/* FINAL INSTRUCTIONS */}
 
           <div className="mt-5 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm text-primary">
             <p className="font-medium">
@@ -812,20 +708,18 @@ function Book() {
               </li>
 
               <li>
-                Attach your payment screenshot or receipt manually.
+                Send the booking message.
               </li>
 
               <li>
-                Send the WhatsApp message.
+                Continue back to this website.
               </li>
 
               <li>
-                Wait for Glow Spot BW to confirm your appointment.
+                Complete the deposit payment in Step 5.
               </li>
             </ol>
           </div>
-
-          {/* WHATSAPP BUTTON */}
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <a
@@ -848,52 +742,209 @@ function Book() {
             </button>
           </div>
 
-          {/* CONTINUE TO DEPOSIT */}
+          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+            <button
+              type="button"
+              onClick={goBack}
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/40 px-6 py-3 text-sm text-primary"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to details
+            </button>
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <button
               type="button"
               onClick={goNext}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
             >
               Continue to deposit
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
+        </section>
+      )}
 
-          {/* BACK */}
+      {/* =========================================================
+          STEP 5 — DEPOSIT
+      ========================================================= */}
 
-          <div className="mt-6">
+      {currentStep === 5 && (
+        <section className="mt-10">
+          <h2 className="font-display text-2xl text-primary">
+            Step 5 — Pay your BWP {DEPOSIT_AMOUNT} deposit
+          </h2>
+
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            A BWP {DEPOSIT_AMOUNT} deposit is required before your
+            booking can be confirmed. The remaining balance is paid
+            at the studio.
+          </p>
+
+          <div className="mt-5 rounded-2xl p-5 glass shadow-soft">
+            <div className="flex items-baseline justify-between gap-4">
+              <p className="text-sm text-muted-foreground">
+                Deposit required
+              </p>
+
+              <p className="font-display text-3xl text-primary">
+                BWP {deposit}
+              </p>
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <PayCard
+                title="Orange Money / Pay2Cell"
+                lines={[
+                  `Name: ${PAYMENT_DETAILS.orangeMoney.name}`,
+                  `Number: ${PAYMENT_DETAILS.orangeMoney.number}`,
+                ]}
+                copyText={PAYMENT_DETAILS.orangeMoney.number}
+              />
+
+              <PayCard
+                title="Bank Transfer — FNB Botswana"
+                lines={[
+                  `Account name: ${PAYMENT_DETAILS.bank.name}`,
+                  `Account no.: ${PAYMENT_DETAILS.bank.account}`,
+                  `Branch: ${PAYMENT_DETAILS.bank.branch}`,
+                  `Branch no.: ${PAYMENT_DETAILS.bank.branchNumber}`,
+                ]}
+                copyText={PAYMENT_DETAILS.bank.account}
+              />
+            </div>
+
+            <p className="mt-4 text-xs leading-5 text-muted-foreground">
+              Use your full name as the payment reference. The
+              remaining balance is paid at the studio on the day of
+              your appointment.
+            </p>
+          </div>
+
+          <div className="mt-5 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
+            <p className="font-medium text-primary">
+              Payment proof
+            </p>
+
+            <p className="mt-1 leading-6 text-primary/80">
+              After making your deposit, send your payment screenshot
+              or receipt through WhatsApp. Then return here and tap
+              <strong> Confirm booking </strong>
+              below.
+            </p>
+          </div>
+
+          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
             <button
               type="button"
               onClick={goBack}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-primary/40 px-6 py-3 text-sm text-primary sm:w-auto"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/40 px-6 py-3 text-sm text-primary"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back
+              Back to WhatsApp
+            </button>
+
+            <button
+              type="button"
+              onClick={confirmBooking}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
+            >
+              Confirm booking
+              <CheckCircle2 className="h-4 w-4" />
             </button>
           </div>
         </section>
       )}
 
-      {bookingConfirmed && (
-        <section className="mt-10 rounded-2xl border border-primary/30 bg-primary/5 p-6 text-center shadow-soft" role="status" aria-live="polite">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <CheckCircle2 className="h-7 w-7" />
+      {/* =========================================================
+          STEP 6 — CONFIRMATION
+      ========================================================= */}
+
+      {currentStep === 6 && bookingConfirmed && (
+        <section className="mt-10">
+          <div className="rounded-3xl border border-primary/30 bg-primary/5 p-6 text-center shadow-soft sm:p-10">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground">
+              <CheckCircle2 className="h-10 w-10" />
+            </div>
+
+            <p className="mt-6 text-xs uppercase tracking-[0.3em] text-primary/70">
+              Booking complete
+            </p>
+
+            <h2 className="mt-2 font-display text-3xl text-primary sm:text-4xl">
+              Thank you, {name || "your booking"}!
+            </h2>
+
+            <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-muted-foreground">
+              Your booking request has been completed on the
+              website. Glow Spot BW will review your booking and
+              confirm your appointment.
+            </p>
+
+            <div className="mx-auto mt-6 max-w-md rounded-2xl border border-border bg-card p-5 text-left">
+              <p className="text-xs uppercase tracking-wider text-primary">
+                Booking summary
+              </p>
+
+              <div className="mt-4 space-y-3 text-sm">
+                <div className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">
+                    Services
+                  </span>
+
+                  <span className="text-right font-medium">
+                    {selectedServices.length}
+                  </span>
+                </div>
+
+                <div className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">
+                    Total
+                  </span>
+
+                  <span className="font-display text-lg text-primary">
+                    BWP {totalPrice}
+                  </span>
+                </div>
+
+                <div className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">
+                    Deposit
+                  </span>
+
+                  <span className="font-medium">
+                    BWP {deposit}
+                  </span>
+                </div>
+
+                <div className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">
+                    Balance at studio
+                  </span>
+
+                  <span className="font-medium">
+                    BWP {remainingBalance}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mx-auto mt-6 max-w-xl rounded-xl border border-primary/30 bg-background/60 p-4 text-sm">
+              <p className="font-medium text-primary">
+                Important
+              </p>
+
+              <p className="mt-1 leading-6 text-muted-foreground">
+                If you have not already done so, make sure your
+                deposit is paid and your payment proof has been sent
+                to Glow Spot BW through WhatsApp.
+              </p>
+            </div>
+
+            <p className="mt-6 text-xs leading-5 text-muted-foreground">
+              Please wait for Glow Spot BW to confirm your appointment
+              before considering the booking fully accepted.
+            </p>
           </div>
-
-          <h2 className="mt-4 font-display text-2xl text-primary">
-            Booking confirmation received!
-          </h2>
-
-          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
-            Thank you, {name || "your booking"}. Your booking details have been completed on the website.
-            Please make sure your deposit has been paid and your payment proof has been sent in the Glow Spot BW WhatsApp chat.
-          </p>
-
-          <p className="mt-4 text-xs text-primary/80">
-            Glow Spot BW will review your request and confirm your appointment.
-          </p>
         </section>
       )}
 
@@ -901,101 +952,105 @@ function Book() {
           BOOKING SUMMARY
       ========================================================= */}
 
-      <section className="mt-10 rounded-2xl border border-border bg-card p-5 shadow-soft">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="font-display text-lg text-primary">
-            Booking summary
-          </h2>
+      {!bookingConfirmed && (
+        <section className="mt-10 rounded-2xl border border-border bg-card p-5 shadow-soft">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-lg text-primary">
+              Booking summary
+            </h2>
 
-          <span className="rounded-full bg-secondary px-3 py-1 text-xs text-primary">
-            Step {currentStep} of 5
-          </span>
-        </div>
-
-        <div className="mt-4 space-y-3 text-sm">
-          <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">
-              Services
-            </span>
-
-            <span className="text-right font-medium text-foreground">
-              {selectedServices.length}
+            <span className="rounded-full bg-secondary px-3 py-1 text-xs text-primary">
+              Step {currentStep} of 6
             </span>
           </div>
 
-          <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">
-              Total duration
-            </span>
+          <div className="mt-4 space-y-3 text-sm">
+            <div className="flex justify-between gap-4">
+              <span className="text-muted-foreground">
+                Services
+              </span>
 
-            <span className="font-medium text-foreground">
-              {formatMinutes(totalMinutes)}
-            </span>
+              <span className="text-right font-medium text-foreground">
+                {selectedServices.length}
+              </span>
+            </div>
+
+            <div className="flex justify-between gap-4">
+              <span className="text-muted-foreground">
+                Total duration
+              </span>
+
+              <span className="font-medium text-foreground">
+                {formatMinutes(totalMinutes)}
+              </span>
+            </div>
+
+            <div className="flex justify-between gap-4">
+              <span className="text-muted-foreground">
+                Total
+              </span>
+
+              <span className="font-display text-lg text-primary">
+                BWP {totalPrice}
+              </span>
+            </div>
+
+            <div className="flex justify-between gap-4">
+              <span className="text-muted-foreground">
+                Deposit
+              </span>
+
+              <span className="font-medium text-foreground">
+                BWP {deposit}
+              </span>
+            </div>
+
+            <div className="flex justify-between gap-4">
+              <span className="text-muted-foreground">
+                Balance at studio
+              </span>
+
+              <span className="font-medium text-foreground">
+                BWP {remainingBalance}
+              </span>
+            </div>
           </div>
-
-          <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">
-              Total
-            </span>
-
-            <span className="font-display text-lg text-primary">
-              BWP {totalPrice}
-            </span>
-          </div>
-
-          <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">
-              Deposit
-            </span>
-
-            <span className="font-medium text-foreground">
-              BWP {deposit}
-            </span>
-          </div>
-
-          <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">
-              Balance at studio
-            </span>
-
-            <span className="font-medium text-foreground">
-              BWP {remainingBalance}
-            </span>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* =========================================================
           CANCELLATION
       ========================================================= */}
 
-      <section className="mt-10 rounded-2xl border border-border bg-secondary/30 p-5 text-sm text-muted-foreground">
-        <h3 className="font-display text-lg text-primary">
-          Cancellation & reminders
-        </h3>
+      {!bookingConfirmed && (
+        <section className="mt-10 rounded-2xl border border-border bg-secondary/30 p-5 text-sm text-muted-foreground">
+          <h3 className="font-display text-lg text-primary">
+            Cancellation & reminders
+          </h3>
 
-        <ul className="mt-2 list-inside list-disc space-y-2">
-          <li>Deposits are non-refundable.</li>
+          <ul className="mt-2 list-inside list-disc space-y-2">
+            <li>Deposits are non-refundable.</li>
 
-          <li>
-            Rescheduling is allowed with sufficient notice (24h+).
-          </li>
+            <li>
+              Rescheduling is allowed with sufficient notice (24h+).
+            </li>
 
-          <li>
-            Late cancellations may forfeit the deposit.
-          </li>
+            <li>
+              Late cancellations may forfeit the deposit.
+            </li>
 
-          <li>
-            A friendly WhatsApp reminder is sent 24 hours before
-            your appointment.
-          </li>
+            <li>
+              A friendly WhatsApp reminder is sent 24 hours before
+              your appointment.
+            </li>
 
-          <li>
-            Appointments outside operating hours add BWP{" "}
-            {AFTER_HOURS_FEE}.
-          </li>
-        </ul>
-      </section>
+            <li>
+              Appointments outside operating hours add BWP{" "}
+              {AFTER_HOURS_FEE}.
+            </li>
+          </ul>
+        </section>
+      )}
     </div>
   );
 }
