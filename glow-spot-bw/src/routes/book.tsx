@@ -11,10 +11,13 @@ import {
   CalendarDays,
   ArrowRight,
   ArrowLeft,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 import {
   ALL_SERVICES,
+  SERVICE_GROUPS,
   PAYMENT_DETAILS,
   WHATSAPP_NUMBER,
   DEPOSIT_AMOUNT,
@@ -36,7 +39,7 @@ export const Route = createFileRoute("/book")({
       {
         name: "description",
         content:
-          "Book your appointment at Glow Spot BW Gaborone. Select multiple services, choose your appointment slot, provide your details, confirm through WhatsApp and pay your deposit.",
+          "Book your appointment at Glow Spot BW Gaborone. Select multiple services, choose your appointment slot, provide your details, confirm through WhatsApp and complete your deposit.",
       },
       {
         property: "og:title",
@@ -62,15 +65,6 @@ function doCopy(text: string) {
 const HOURS_TEXT =
   "Tue–Sat 09:00–18:00 · Sun 11:00–17:00 · Mon closed";
 
-const STEPS = [
-  { number: 1, label: "Services" },
-  { number: 2, label: "Slot" },
-  { number: 3, label: "Details" },
-  { number: 4, label: "WhatsApp" },
-  { number: 5, label: "Deposit" },
-  { number: 6, label: "Confirmed" },
-] as const;
-
 function Book() {
   const { service } = Route.useSearch();
 
@@ -81,40 +75,46 @@ function Book() {
   );
 
   const [selectedIds, setSelectedIds] = useState<string[]>([initialId]);
+
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
+
   const [calendarLive, setCalendarLive] = useState(false);
-  const [bookingConfirmed, setBookingConfirmed] = useState(false);
 
   /*
     BOOKING FLOW
 
     1 = Services
-    2 = Booking Slot
+    2 = Slot
     3 = Details
     4 = WhatsApp
     5 = Deposit
-    6 = Confirmation
+    6 = Confirmed
   */
-
   const [currentStep, setCurrentStep] = useState(1);
+
+  /*
+    Only one service category is open at a time.
+    This keeps the page short and mobile friendly.
+  */
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
 
   const selectedServices = useMemo(
     () =>
       selectedIds
-        .map((id) => ALL_SERVICES.find((s) => s.id === id)!)
+        .map((id) => ALL_SERVICES.find((s) => s.id === id))
         .filter(Boolean),
     [selectedIds],
   );
 
   const totalMinutes = selectedServices.reduce(
-    (n, s) => n + s.minutes,
+    (n, s) => n + (s?.minutes ?? 0),
     0,
   );
 
   const totalPrice = selectedServices.reduce(
-    (n, s) => n + s.price,
+    (n, s) => n + (s?.price ?? 0),
     0,
   );
 
@@ -139,6 +139,12 @@ function Book() {
     });
   }
 
+  function toggleCategory(category: string) {
+    setOpenCategory((current) =>
+      current === category ? null : category,
+    );
+  }
+
   const summary = useMemo(() => {
     const lines: string[] = [];
 
@@ -150,6 +156,8 @@ function Book() {
     lines.push("SERVICES:");
 
     for (const s of selectedServices) {
+      if (!s) continue;
+
       lines.push(
         `• ${s.name} — ${
           s.priceLabel ?? `BWP ${s.price}`
@@ -160,18 +168,9 @@ function Book() {
     lines.push("");
 
     lines.push(`Total: BWP ${totalPrice}`);
-
-    lines.push(
-      `Duration: ${formatMinutes(totalMinutes)}`,
-    );
-
-    lines.push(
-      `Deposit: BWP ${deposit}`,
-    );
-
-    lines.push(
-      `Remaining balance: BWP ${remainingBalance}`,
-    );
+    lines.push(`Duration: ${formatMinutes(totalMinutes)}`);
+    lines.push(`Deposit: BWP ${deposit}`);
+    lines.push(`Remaining balance: BWP ${remainingBalance}`);
 
     lines.push("");
 
@@ -236,7 +235,7 @@ function Book() {
   }
 
   function goToStep(step: number) {
-    if (step <= currentStep && !bookingConfirmed) {
+    if (step <= currentStep) {
       setCurrentStep(step);
 
       requestAnimationFrame(() => {
@@ -245,18 +244,8 @@ function Book() {
     }
   }
 
-  function confirmBooking() {
-    setBookingConfirmed(true);
-    setCurrentStep(6);
-
-    requestAnimationFrame(() => {
-      scrollToTop();
-    });
-  }
-
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
-
       {/* =========================================================
           HEADER
       ========================================================= */}
@@ -287,15 +276,19 @@ function Book() {
       ========================================================= */}
 
       <div className="mt-8 grid grid-cols-6 gap-1 sm:gap-2">
-        {STEPS.map((step) => (
+        {[
+          { number: 1, label: "Services" },
+          { number: 2, label: "Slot" },
+          { number: 3, label: "Details" },
+          { number: 4, label: "WhatsApp" },
+          { number: 5, label: "Deposit" },
+          { number: 6, label: "Confirmed" },
+        ].map((step) => (
           <button
             key={step.number}
             type="button"
             onClick={() => goToStep(step.number)}
-            disabled={
-              step.number > currentStep ||
-              bookingConfirmed
-            }
+            disabled={step.number > currentStep}
             className={`rounded-xl px-1 py-2.5 text-center transition ${
               currentStep === step.number
                 ? "bg-primary text-primary-foreground"
@@ -322,72 +315,137 @@ function Book() {
       {currentStep === 1 && (
         <section className="mt-10">
           <div>
-            <h2 className="font-display text-2xl text-primary">
+            <h2 className="font-display text-2xl text-primary sm:text-3xl">
               Step 1 — Choose your service(s)
             </h2>
 
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">
               Select every service you want for the same appointment.
-              Multiple services can be selected.
+              Tap a category to view its services.
             </p>
           </div>
 
-          <div className="mt-5 space-y-3">
-            {ALL_SERVICES.map((s) => {
-              const chosen = selectedIds.includes(s.id);
+          {/* =====================================================
+              COLLAPSIBLE SERVICE CATEGORIES
+          ===================================================== */}
+
+          <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card">
+            {SERVICE_GROUPS.map((group) => {
+              const isOpen = openCategory === group.group;
+
+              const selectedInCategory = group.services.filter((s) =>
+                selectedIds.includes(s.id),
+              ).length;
 
               return (
-                <button
-                  type="button"
-                  key={s.id}
-                  onClick={() => toggleService(s.id)}
-                  aria-pressed={chosen}
-                  className={`flex w-full items-start justify-between gap-4 rounded-2xl border p-4 text-left transition ${
-                    chosen
-                      ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                      : "border-border bg-card hover:border-primary/50"
-                  }`}
+                <div
+                  key={group.group}
+                  className="border-b border-border last:border-b-0"
                 >
-                  <div className="flex min-w-0 flex-1 gap-3">
-                    <span
-                      className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-                        chosen
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary text-primary"
-                      }`}
-                    >
-                      {chosen ? (
-                        <CheckCircle2 className="h-4 w-4" />
-                      ) : (
-                        <Plus className="h-4 w-4" />
-                      )}
-                    </span>
+                  {/* CATEGORY HEADER */}
 
+                  <button
+                    type="button"
+                    onClick={() => toggleCategory(group.group)}
+                    aria-expanded={isOpen}
+                    className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left transition hover:bg-secondary/40"
+                  >
                     <div className="min-w-0">
-                      <p className="font-medium text-foreground">
-                        {s.name}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-display text-xl text-foreground sm:text-2xl">
+                          {group.group}
+                        </h3>
 
-                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                        {formatMinutes(s.minutes)} ·{" "}
-                        {s.description}
+                        {selectedInCategory > 0 && (
+                          <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground">
+                            {selectedInCategory} selected
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {group.services.length} service
+                        {group.services.length === 1 ? "" : "s"}
                       </p>
                     </div>
-                  </div>
 
-                  <div className="shrink-0 text-right">
-                    <p className="font-display text-lg text-primary">
-                      {s.priceLabel ?? `P${s.price}`}
-                    </p>
-
-                    <span className="text-[10px] text-muted-foreground">
-                      {formatMinutes(s.minutes)}
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-primary">
+                      {isOpen ? (
+                        <ChevronUp className="h-5 w-5" />
+                      ) : (
+                        <ChevronDown className="h-5 w-5" />
+                      )}
                     </span>
-                  </div>
-                </button>
+                  </button>
+
+                  {/* SERVICES INSIDE CATEGORY */}
+
+                  {isOpen && (
+                    <div className="space-y-3 bg-secondary/20 px-4 pb-4 pt-1">
+                      {group.services.map((s) => {
+                        const chosen = selectedIds.includes(s.id);
+
+                        return (
+                          <button
+                            type="button"
+                            key={s.id}
+                            onClick={() => toggleService(s.id)}
+                            aria-pressed={chosen}
+                            className={`flex w-full items-start justify-between gap-3 rounded-2xl border p-4 text-left transition ${
+                              chosen
+                                ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                                : "border-border bg-card hover:border-primary/50"
+                            }`}
+                          >
+                            <div className="flex min-w-0 flex-1 gap-3">
+                              <span
+                                className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
+                                  chosen
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-secondary text-primary"
+                                }`}
+                              >
+                                {chosen ? (
+                                  <CheckCircle2 className="h-4 w-4" />
+                                ) : (
+                                  <Plus className="h-4 w-4" />
+                                )}
+                              </span>
+
+                              <div className="min-w-0">
+                                <p className="font-medium text-foreground">
+                                  {s.name}
+                                </p>
+
+                                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                                  {formatMinutes(s.minutes)} ·{" "}
+                                  {s.description}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="shrink-0 text-right">
+                              <p className="font-display text-lg text-primary">
+                                {s.priceLabel ?? `P${s.price}`}
+                              </p>
+
+                              <span className="text-[10px] text-muted-foreground">
+                                {formatMinutes(s.minutes)}
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
+
+          {/* =====================================================
+              SELECTED SERVICES
+          ===================================================== */}
 
           <div className="mt-5 rounded-2xl bg-secondary/60 p-4">
             <div className="flex items-center justify-between gap-4">
@@ -412,7 +470,26 @@ function Book() {
                 </p>
               </div>
             </div>
+
+            {selectedServices.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {selectedServices.map((s) => {
+                  if (!s) return null;
+
+                  return (
+                    <span
+                      key={s.id}
+                      className="rounded-full bg-background px-3 py-1.5 text-xs text-primary"
+                    >
+                      {s.name}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
           </div>
+
+          {/* NEXT */}
 
           <div className="mt-6 flex justify-end">
             <button
@@ -429,7 +506,7 @@ function Book() {
       )}
 
       {/* =========================================================
-          STEP 2 — BOOKING SLOT
+          STEP 2 — SLOT
       ========================================================= */}
 
       {currentStep === 2 && (
@@ -449,24 +526,25 @@ function Book() {
           </p>
 
           <div className="mt-5 rounded-2xl border border-primary/20 bg-primary/5 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-wider text-primary/70">
-                  Your services
-                </p>
+            <p className="text-xs uppercase tracking-wider text-primary/70">
+              Your services
+            </p>
 
-                <p className="mt-1 text-sm font-medium text-primary">
-                  {selectedServices
-                    .map((s) => s.name)
-                    .join(" · ")}
-                </p>
-              </div>
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-primary">
+                {selectedServices
+                  .map((s) => s?.name)
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
 
               <p className="shrink-0 font-display text-lg text-primary">
                 BWP {totalPrice}
               </p>
             </div>
           </div>
+
+          {/* GOOGLE CALENDAR */}
 
           <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-background shadow-soft">
             <div className="relative min-h-[520px] sm:min-h-[700px]">
@@ -492,7 +570,6 @@ function Book() {
                   type="button"
                   onClick={() => setCalendarLive(true)}
                   className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/75 px-5 text-center backdrop-blur-sm transition hover:bg-background/60"
-                  aria-label="Activate booking calendar"
                 >
                   <span className="rounded-full bg-primary px-7 py-3 text-sm font-medium text-primary-foreground shadow-soft">
                     Tap to activate calendar
@@ -636,9 +713,8 @@ function Book() {
             </p>
 
             <p className="mt-1 leading-6 text-muted-foreground">
-              You do not need to upload anything here. After opening
-              WhatsApp, send your payment screenshot or receipt
-              directly in the chat.
+              After opening WhatsApp, send your payment screenshot
+              or receipt directly in the chat.
             </p>
           </div>
 
@@ -658,7 +734,7 @@ function Book() {
               disabled={!name.trim() || !phone.trim()}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Continue to WhatsApp
+              Review WhatsApp
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
@@ -683,7 +759,7 @@ function Book() {
             <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
               Your booking summary is ready. Open WhatsApp, send
               the message and attach your payment screenshot or
-              receipt manually.
+              receipt.
             </p>
           </div>
 
@@ -703,20 +779,16 @@ function Book() {
             </p>
 
             <ol className="mt-2 list-inside list-decimal space-y-2 text-primary/80">
-              <li>
-                Tap <strong>Send on WhatsApp</strong>.
-              </li>
+              <li>Tap Send on WhatsApp.</li>
 
               <li>
-                Send the booking message.
+                Attach your payment screenshot or receipt manually.
               </li>
 
-              <li>
-                Continue back to this website.
-              </li>
+              <li>Send the WhatsApp message.</li>
 
               <li>
-                Complete the deposit payment in Step 5.
+                Wait for Glow Spot BW to acknowledge your booking.
               </li>
             </ol>
           </div>
@@ -742,14 +814,21 @@ function Book() {
             </button>
           </div>
 
-          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+          <div className="mt-6 rounded-xl border border-primary/20 bg-secondary/40 p-4 text-center text-sm text-muted-foreground">
+            <p>
+              After sending your booking on WhatsApp, continue to
+              the deposit instructions.
+            </p>
+          </div>
+
+          <div className="mt-6 flex justify-between">
             <button
               type="button"
               onClick={goBack}
               className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/40 px-6 py-3 text-sm text-primary"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to details
+              Back
             </button>
 
             <button
@@ -775,9 +854,9 @@ function Book() {
           </h2>
 
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            A BWP {DEPOSIT_AMOUNT} deposit is required before your
-            booking can be confirmed. The remaining balance is paid
-            at the studio.
+            Complete your deposit using one of the payment methods
+            below. Your booking is only fully confirmed after the
+            deposit has been completed.
           </p>
 
           <div className="mt-5 rounded-2xl p-5 glass shadow-soft">
@@ -793,16 +872,18 @@ function Book() {
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <PayCard
-                title="Orange Money / Pay2Cell"
+                title="Pay2Cell / Orange Money"
                 lines={[
                   `Name: ${PAYMENT_DETAILS.orangeMoney.name}`,
                   `Number: ${PAYMENT_DETAILS.orangeMoney.number}`,
                 ]}
-                copyText={PAYMENT_DETAILS.orangeMoney.number}
+                copyText={
+                  PAYMENT_DETAILS.orangeMoney.number
+                }
               />
 
               <PayCard
-                title="Bank Transfer — FNB Botswana"
+                title="FNB Botswana"
                 lines={[
                   `Account name: ${PAYMENT_DETAILS.bank.name}`,
                   `Account no.: ${PAYMENT_DETAILS.bank.account}`,
@@ -822,14 +903,13 @@ function Book() {
 
           <div className="mt-5 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
             <p className="font-medium text-primary">
-              Payment proof
+              Important
             </p>
 
             <p className="mt-1 leading-6 text-primary/80">
-              After making your deposit, send your payment screenshot
-              or receipt through WhatsApp. Then return here and tap
-              <strong> Confirm booking </strong>
-              below.
+              After paying, make sure your payment proof has been
+              sent through WhatsApp. Then tap the button below to
+              complete your booking.
             </p>
           </div>
 
@@ -840,29 +920,29 @@ function Book() {
               className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/40 px-6 py-3 text-sm text-primary"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to WhatsApp
+              Back
             </button>
 
             <button
               type="button"
-              onClick={confirmBooking}
+              onClick={goNext}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
             >
-              Confirm booking
-              <CheckCircle2 className="h-4 w-4" />
+              I've completed my deposit
+              <ArrowRight className="h-4 w-4" />
             </button>
           </div>
         </section>
       )}
 
       {/* =========================================================
-          STEP 6 — CONFIRMATION
+          STEP 6 — CONFIRMED
       ========================================================= */}
 
-      {currentStep === 6 && bookingConfirmed && (
+      {currentStep === 6 && (
         <section className="mt-10">
-          <div className="rounded-3xl border border-primary/30 bg-primary/5 p-6 text-center shadow-soft sm:p-10">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground">
+          <div className="rounded-3xl border border-primary/20 bg-primary/5 p-6 text-center sm:p-10">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-soft">
               <CheckCircle2 className="h-10 w-10" />
             </div>
 
@@ -871,27 +951,38 @@ function Book() {
             </p>
 
             <h2 className="mt-2 font-display text-3xl text-primary sm:text-4xl">
-              Thank you, {name || "your booking"}!
+              Your booking is confirmed!
             </h2>
 
-            <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-muted-foreground">
-              Your booking request has been completed on the
-              website. Glow Spot BW will review your booking and
-              confirm your appointment.
+            <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-muted-foreground">
+              Thank you, {name || "for booking with us"}. Your
+              booking request and deposit have been completed.
+              Glow Spot BW will confirm the appointment details
+              with you on WhatsApp.
             </p>
 
-            <div className="mx-auto mt-6 max-w-md rounded-2xl border border-border bg-card p-5 text-left">
-              <p className="text-xs uppercase tracking-wider text-primary">
+            <div className="mx-auto mt-6 max-w-md rounded-2xl bg-background p-5 text-left shadow-soft">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">
                 Booking summary
               </p>
 
               <div className="mt-4 space-y-3 text-sm">
                 <div className="flex justify-between gap-4">
                   <span className="text-muted-foreground">
+                    Client
+                  </span>
+
+                  <span className="font-medium text-foreground">
+                    {name}
+                  </span>
+                </div>
+
+                <div className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">
                     Services
                   </span>
 
-                  <span className="text-right font-medium">
+                  <span className="text-right font-medium text-foreground">
                     {selectedServices.length}
                   </span>
                 </div>
@@ -911,39 +1002,45 @@ function Book() {
                     Deposit
                   </span>
 
-                  <span className="font-medium">
+                  <span className="font-medium text-foreground">
                     BWP {deposit}
                   </span>
                 </div>
 
                 <div className="flex justify-between gap-4">
                   <span className="text-muted-foreground">
-                    Balance at studio
+                    Balance
                   </span>
 
-                  <span className="font-medium">
+                  <span className="font-medium text-foreground">
                     BWP {remainingBalance}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="mx-auto mt-6 max-w-xl rounded-xl border border-primary/30 bg-background/60 p-4 text-sm">
+            <div className="mt-6 rounded-xl bg-background/70 p-4 text-sm text-muted-foreground">
               <p className="font-medium text-primary">
-                Important
+                Keep your WhatsApp chat with Glow Spot BW.
               </p>
 
-              <p className="mt-1 leading-6 text-muted-foreground">
-                If you have not already done so, make sure your
-                deposit is paid and your payment proof has been sent
-                to Glow Spot BW through WhatsApp.
+              <p className="mt-1">
+                Glow Spot BW will use WhatsApp to communicate with
+                you about your appointment and any final details.
               </p>
             </div>
+          </div>
 
-            <p className="mt-6 text-xs leading-5 text-muted-foreground">
-              Please wait for Glow Spot BW to confirm your appointment
-              before considering the booking fully accepted.
-            </p>
+          <div className="mt-6 flex justify-center">
+            <a
+              href={waLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
+            >
+              <MessageCircle className="h-5 w-5" />
+              Open WhatsApp
+            </a>
           </div>
         </section>
       )}
@@ -952,105 +1049,101 @@ function Book() {
           BOOKING SUMMARY
       ========================================================= */}
 
-      {!bookingConfirmed && (
-        <section className="mt-10 rounded-2xl border border-border bg-card p-5 shadow-soft">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="font-display text-lg text-primary">
-              Booking summary
-            </h2>
+      <section className="mt-10 rounded-2xl border border-border bg-card p-5 shadow-soft">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-display text-lg text-primary">
+            Booking summary
+          </h2>
 
-            <span className="rounded-full bg-secondary px-3 py-1 text-xs text-primary">
-              Step {currentStep} of 6
+          <span className="rounded-full bg-secondary px-3 py-1 text-xs text-primary">
+            Step {currentStep} of 6
+          </span>
+        </div>
+
+        <div className="mt-4 space-y-3 text-sm">
+          <div className="flex justify-between gap-4">
+            <span className="text-muted-foreground">
+              Services
+            </span>
+
+            <span className="text-right font-medium text-foreground">
+              {selectedServices.length}
             </span>
           </div>
 
-          <div className="mt-4 space-y-3 text-sm">
-            <div className="flex justify-between gap-4">
-              <span className="text-muted-foreground">
-                Services
-              </span>
+          <div className="flex justify-between gap-4">
+            <span className="text-muted-foreground">
+              Total duration
+            </span>
 
-              <span className="text-right font-medium text-foreground">
-                {selectedServices.length}
-              </span>
-            </div>
-
-            <div className="flex justify-between gap-4">
-              <span className="text-muted-foreground">
-                Total duration
-              </span>
-
-              <span className="font-medium text-foreground">
-                {formatMinutes(totalMinutes)}
-              </span>
-            </div>
-
-            <div className="flex justify-between gap-4">
-              <span className="text-muted-foreground">
-                Total
-              </span>
-
-              <span className="font-display text-lg text-primary">
-                BWP {totalPrice}
-              </span>
-            </div>
-
-            <div className="flex justify-between gap-4">
-              <span className="text-muted-foreground">
-                Deposit
-              </span>
-
-              <span className="font-medium text-foreground">
-                BWP {deposit}
-              </span>
-            </div>
-
-            <div className="flex justify-between gap-4">
-              <span className="text-muted-foreground">
-                Balance at studio
-              </span>
-
-              <span className="font-medium text-foreground">
-                BWP {remainingBalance}
-              </span>
-            </div>
+            <span className="font-medium text-foreground">
+              {formatMinutes(totalMinutes)}
+            </span>
           </div>
-        </section>
-      )}
+
+          <div className="flex justify-between gap-4">
+            <span className="text-muted-foreground">
+              Total
+            </span>
+
+            <span className="font-display text-lg text-primary">
+              BWP {totalPrice}
+            </span>
+          </div>
+
+          <div className="flex justify-between gap-4">
+            <span className="text-muted-foreground">
+              Deposit
+            </span>
+
+            <span className="font-medium text-foreground">
+              BWP {deposit}
+            </span>
+          </div>
+
+          <div className="flex justify-between gap-4">
+            <span className="text-muted-foreground">
+              Balance at studio
+            </span>
+
+            <span className="font-medium text-foreground">
+              BWP {remainingBalance}
+            </span>
+          </div>
+        </div>
+      </section>
 
       {/* =========================================================
           CANCELLATION
       ========================================================= */}
 
-      {!bookingConfirmed && (
-        <section className="mt-10 rounded-2xl border border-border bg-secondary/30 p-5 text-sm text-muted-foreground">
-          <h3 className="font-display text-lg text-primary">
-            Cancellation & reminders
-          </h3>
+      <section className="mt-10 rounded-2xl border border-border bg-secondary/30 p-5 text-sm text-muted-foreground">
+        <h3 className="font-display text-lg text-primary">
+          Cancellation & reminders
+        </h3>
 
-          <ul className="mt-2 list-inside list-disc space-y-2">
-            <li>Deposits are non-refundable.</li>
+        <ul className="mt-2 list-inside list-disc space-y-2">
+          <li>Deposits are non-refundable.</li>
 
-            <li>
-              Rescheduling is allowed with sufficient notice (24h+).
-            </li>
+          <li>
+            Rescheduling is allowed with sufficient notice (24h+).
+          </li>
 
-            <li>
-              Late cancellations may forfeit the deposit.
-            </li>
+          <li>
+            Late cancellations may forfeit the deposit.
+          </li>
 
-            <li>
-              A friendly WhatsApp reminder is sent 24 hours before
-              your appointment.
-            </li>
+          <li>
+            A friendly WhatsApp reminder is sent 24 hours before
+            your appointment.
+          </li>
 
-            <li>
-              Appointments outside operating hours add BWP{" "}
-              {AFTER_HOURS_FEE}.
-            </li>
-          </ul>
-        </section>
-      )}
+          <li>
+            Appointments outside operating hours add BWP{" "}
+            {AFTER_HOURS_FEE}.
+          </li>
+        </ul>
+      </section>
     </div>
   );
 }
