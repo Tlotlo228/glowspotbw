@@ -82,10 +82,6 @@ function Book() {
 
   const [calendarLive, setCalendarLive] = useState(false);
 
-  /* Booking policy acceptance (required before leaving Step 3) */
-  const [policyAccepted, setPolicyAccepted] = useState(false);
-  const [policyOpen, setPolicyOpen] = useState(false);
-
   /*
     BOOKING FLOW
 
@@ -196,12 +192,6 @@ function Book() {
 
     lines.push(
       "I will send my proof of payment manually as a screenshot or receipt in this WhatsApp chat.",
-    );
-
-    lines.push("");
-
-    lines.push(
-      "I have read, understood and agreed to the Glow Spot BW booking policy.",
     );
 
     return lines.join("\n");
@@ -717,54 +707,6 @@ function Book() {
             />
           </div>
 
-          {/* BOOKING POLICY ACCEPTANCE */}
-
-          <div className="mt-5 rounded-xl border border-border bg-card p-4">
-            <button
-              type="button"
-              onClick={() => setPolicyOpen((open) => !open)}
-              aria-expanded={policyOpen}
-              className="flex w-full items-center justify-between gap-3 text-left"
-            >
-              <span className="font-display text-base text-primary">
-                Booking policy
-              </span>
-
-              <span className="flex items-center gap-1 text-xs text-primary">
-                {policyOpen ? "Hide" : "Read policy"}
-                {policyOpen ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </span>
-            </button>
-
-            {policyOpen && (
-              <div className="mt-4 max-h-80 overflow-y-auto rounded-lg bg-secondary/30 p-4">
-                <BookingPolicy />
-              </div>
-            )}
-
-            <label
-              htmlFor="policy-accept"
-              className="mt-4 flex cursor-pointer items-start gap-3 text-sm leading-6 text-foreground"
-            >
-              <input
-                id="policy-accept"
-                type="checkbox"
-                checked={policyAccepted}
-                onChange={(e) => setPolicyAccepted(e.target.checked)}
-                className="mt-1 h-5 w-5 shrink-0 accent-primary"
-              />
-
-              <span>
-                I have read, understood and agreed to the Glow Spot
-                BW booking policy.
-              </span>
-            </label>
-          </div>
-
           <div className="mt-5 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 p-4 text-sm">
             <p className="font-display text-base text-primary">
               Payment proof is sent manually
@@ -789,7 +731,7 @@ function Book() {
             <button
               type="button"
               onClick={goNext}
-              disabled={!name.trim() || !phone.trim() || !policyAccepted}
+              disabled={!name.trim() || !phone.trim()}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft disabled:cursor-not-allowed disabled:opacity-50"
             >
               Review WhatsApp
@@ -1172,19 +1114,25 @@ function Book() {
       </section>
 
       {/* =========================================================
-          BOOKING POLICY
+          CANCELLATION
       ========================================================= */}
 
       <section className="mt-10 rounded-2xl border border-border bg-secondary/30 p-5 text-sm text-muted-foreground">
         <h3 className="font-display text-lg text-primary">
-          Booking policy
+          Cancellation & reminders
         </h3>
 
-        <div className="mt-4">
-          <BookingPolicy />
-        </div>
+        <ul className="mt-2 list-inside list-disc space-y-2">
+          <li>Deposits are non-refundable.</li>
 
-        <ul className="mt-5 list-inside list-disc space-y-2 border-t border-border pt-4">
+          <li>
+            Rescheduling is allowed with sufficient notice (24h+).
+          </li>
+
+          <li>
+            Late cancellations may forfeit the deposit.
+          </li>
+
           <li>
             A friendly WhatsApp reminder is sent 24 hours before
             your appointment.
@@ -1196,122 +1144,6 @@ function Book() {
           </li>
         </ul>
       </section>
-    </div>
-  );
-}
-
-/* ===============================================================
-   BOOKING POLICY
-=============================================================== */
-
-function BookingPolicy() {
-  return (
-    <div className="space-y-4 text-sm leading-6 text-muted-foreground">
-      <ul className="list-inside list-disc space-y-3">
-        <li>
-          <strong className="text-foreground">
-            <em>Deposits are required</em>
-          </strong>{" "}
-          to secure all appointments and are non-refundable.
-        </li>
-
-        <li>
-          <strong className="text-foreground">
-            Please double-check
-          </strong>{" "}
-          your booking before confirming. Once an appointment is
-          confirmed, that time slot is reserved exclusively for you.
-        </li>
-
-        <li>
-          <strong className="text-foreground">Double bookings</strong>
-          : If multiple appointments are booked under the same
-          client, the client must cancel the duplicate booking. The
-          deposit for the cancelled booking will not be{" "}
-          <strong className="text-foreground">
-            <em>refunded.</em>
-          </strong>
-        </li>
-
-        <li>
-          <strong className="text-foreground">
-            Cancellations &amp; rescheduling
-          </strong>
-          : At least{" "}
-          <strong className="text-foreground">
-            <em>24 hours’</em>
-          </strong>{" "}
-          notice is required. Late cancellations and rescheduling
-          may result in the deposit being forfeited.
-        </li>
-
-        <li>
-          <strong className="text-foreground">No-shows:</strong>{" "}
-          Failure to attend your appointment without notice will
-          result in the deposit being forfeited.
-        </li>
-
-        <li>
-          <strong className="text-foreground">Late arrivals:</strong>{" "}
-          A grace period of{" "}
-          <strong className="text-foreground">10 minutes</strong>{" "}
-          applies to both parties. Arriving later may result in your
-          appointment being shortened or cancelled.
-        </li>
-      </ul>
-
-      <div>
-        <h4 className="font-semibold text-foreground">
-          Booking for someone else
-        </h4>
-
-        <p className="mt-1">
-          If you are booking an appointment on behalf of another
-          person, you are responsible for ensuring that the correct
-          client information, date and time are selected.
-        </p>
-      </div>
-
-      <div>
-        <h4 className="font-semibold text-foreground">
-          Client responsibility
-        </h4>
-
-        <p className="mt-1">Please double-check your:</p>
-
-        <ul className="mt-1 list-inside list-disc">
-          <li>Service</li>
-          <li>Date</li>
-          <li>Time</li>
-          <li>Contact details</li>
-        </ul>
-
-        <p className="mt-2">
-          <strong className="text-foreground">
-            Also always share your appointment summary to our
-            WhatsApp line
-          </strong>{" "}
-          before completing your booking.
-        </p>
-
-        <p className="mt-2">
-          <strong className="text-foreground">
-            Once an appointment has been confirmed, the client is
-            responsible for the booking.
-          </strong>
-        </p>
-      </div>
-
-      <div>
-        <h4 className="font-semibold text-foreground">
-          Policy acceptance
-        </h4>
-
-        <p className="mt-1">
-          By making a booking, you acknowledge that you have read,
-          understood and agreed to these booking policies. ❤️
-        </p>
-      </div>
     </div>
   );
 }
