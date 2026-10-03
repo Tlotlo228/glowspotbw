@@ -1,18 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import {
+  ArrowLeft,
+  ArrowRight,
+  CalendarDays,
+  Check,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Clock,
   Copy,
   ExternalLink,
   MessageCircle,
-  Clock,
-  Plus,
-  CalendarDays,
-  ArrowRight,
-  ArrowLeft,
-  ChevronDown,
-  ChevronUp,
+  ShieldCheck,
+  X,
 } from "lucide-react";
 
 import {
@@ -21,7 +23,6 @@ import {
   PAYMENT_DETAILS,
   WHATSAPP_NUMBER,
   DEPOSIT_AMOUNT,
-  AFTER_HOURS_FEE,
   CALENDAR_URL,
   formatMinutes,
 } from "@/lib/site-data";
@@ -32,29 +33,24 @@ const search = z.object({
 
 export const Route = createFileRoute("/book")({
   validateSearch: search,
-
   head: () => ({
     meta: [
       { title: "Book Now — Glow Spot BW" },
       {
         name: "description",
         content:
-          "Book your appointment at Glow Spot BW Gaborone. Select multiple services, choose your appointment slot, provide your details, confirm through WhatsApp and complete your deposit.",
+          "Book your appointment at Glow Spot BW Gaborone. Select your services, choose your appointment slot, complete your details and confirm through WhatsApp.",
       },
-      {
-        property: "og:title",
-        content: "Book Now — Glow Spot BW",
-      },
-      {
-        property: "og:url",
-        content: "/book",
-      },
+      { property: "og:title", content: "Book Now — Glow Spot BW" },
+      { property: "og:url", content: "/book" },
     ],
     links: [{ rel: "canonical", href: "/book" }],
   }),
-
   component: Book,
 });
+
+const HOURS_TEXT =
+  "Tue–Sat 09:00–18:00 · Sun 11:00–17:00 · Mon closed";
 
 function doCopy(text: string) {
   if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -62,143 +58,123 @@ function doCopy(text: string) {
   }
 }
 
-const HOURS_TEXT =
-  "Tue–Sat 09:00–18:00 · Sun 11:00–17:00 · Mon closed";
+function scrollToTop() {
+  if (typeof window !== "undefined") {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "auto",
+    });
+  }
+}
 
 function Book() {
   const { service } = Route.useSearch();
 
-  const initialId = useMemo(
+  const initialService = useMemo(
     () =>
-      (ALL_SERVICES.find((s) => s.id === service) ?? ALL_SERVICES[0]).id,
+      ALL_SERVICES.find((item) => item.id === service) ??
+      ALL_SERVICES[0],
     [service],
   );
 
-  const [selectedIds, setSelectedIds] = useState<string[]>([initialId]);
+  const initialGroup = useMemo(() => {
+    return (
+      SERVICE_GROUPS.find((group) =>
+        group.services.some((item) => item.id === initialService?.id),
+      )?.group ?? SERVICE_GROUPS[0]?.group
+    );
+  }, [initialService]);
+
+  const [selectedIds, setSelectedIds] = useState<string[]>(
+    initialService ? [initialService.id] : [],
+  );
+
+  const [activeGroup, setActiveGroup] = useState(
+    initialGroup ?? SERVICE_GROUPS[0]?.group ?? "",
+  );
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
 
   const [calendarLive, setCalendarLive] = useState(false);
-
-  /*
-    BOOKING FLOW
-
-    1 = Services
-    2 = Slot
-    3 = Details
-    4 = WhatsApp
-    5 = Deposit
-    6 = Confirmed
-  */
   const [currentStep, setCurrentStep] = useState(1);
 
-  /*
-    Only one service category is open at a time.
-    This keeps the page short and mobile friendly.
-  */
-  const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [policyAccepted, setPolicyAccepted] = useState(false);
+  const [paymentProofSent, setPaymentProofSent] = useState(false);
+  const [bookingConfirmed, setBookingConfirmed] = useState(false);
+
+  useEffect(() => {
+    if (initialGroup) {
+      setActiveGroup(initialGroup);
+    }
+  }, [initialGroup]);
 
   const selectedServices = useMemo(
     () =>
       selectedIds
-        .map((id) => ALL_SERVICES.find((s) => s.id === id))
+        .map((id) => ALL_SERVICES.find((item) => item.id === id))
         .filter(Boolean),
     [selectedIds],
   );
 
   const totalMinutes = selectedServices.reduce(
-    (n, s) => n + (s?.minutes ?? 0),
+    (total, item) => total + (item?.minutes ?? 0),
     0,
   );
 
   const totalPrice = selectedServices.reduce(
-    (n, s) => n + (s?.price ?? 0),
+    (total, item) => total + (item?.price ?? 0),
     0,
   );
 
   const deposit = DEPOSIT_AMOUNT;
+  const remainingBalance = Math.max(totalPrice - deposit, 0);
 
-  const remainingBalance = Math.max(
-    totalPrice - deposit,
-    0,
-  );
-
-  function toggleService(id: string) {
-    setSelectedIds((prev) => {
-      if (prev.includes(id)) {
-        if (prev.length === 1) {
-          return prev;
-        }
-
-        return prev.filter((x) => x !== id);
-      }
-
-      return [...prev, id];
-    });
-  }
-
-  function toggleCategory(category: string) {
-    setOpenCategory((current) =>
-      current === category ? null : category,
-    );
-  }
+  const activeServices =
+    SERVICE_GROUPS.find((group) => group.group === activeGroup)?.services ??
+    [];
 
   const summary = useMemo(() => {
-    const lines: string[] = [];
+    const serviceLines = selectedServices
+      .map(
+        (item) =>
+          `• ${item?.name} — P${item?.price}${
+            item?.duration ? ` (${item.duration})` : ""
+          }`,
+      )
+      .join("\n");
 
-    lines.push(
-      "Hello Glow Spot BW! I'd like to book an appointment.",
+    return [
+      "Hello Glow Spot BW 🤍",
       "",
-    );
-
-    lines.push("SERVICES:");
-
-    for (const s of selectedServices) {
-      if (!s) continue;
-
-      lines.push(
-        `• ${s.name} — ${
-          s.priceLabel ?? `BWP ${s.price}`
-        } (${s.duration ?? formatMinutes(s.minutes)})`,
-      );
-    }
-
-    lines.push("");
-
-    lines.push(`Total: BWP ${totalPrice}`);
-    lines.push(`Duration: ${formatMinutes(totalMinutes)}`);
-    lines.push(`Deposit: BWP ${deposit}`);
-    lines.push(`Remaining balance: BWP ${remainingBalance}`);
-
-    lines.push("");
-
-    lines.push(`Name: ${name || "—"}`);
-    lines.push(`Phone: ${phone || "—"}`);
-    lines.push(`Notes: ${notes || "—"}`);
-
-    lines.push("");
-
-    lines.push(
-      `Hours: ${HOURS_TEXT}. Appointments outside these hours add BWP ${AFTER_HOURS_FEE}.`,
-    );
-
-    lines.push("");
-
-    lines.push(
-      "I selected my preferred appointment date and time using the Glow Spot BW booking calendar.",
-    );
-
-    lines.push(
-      "I will send my proof of payment manually as a screenshot or receipt in this WhatsApp chat.",
-    );
-
-    return lines.join("\n");
+      "I would like to book an appointment.",
+      "",
+      "SERVICES",
+      serviceLines,
+      "",
+      `Total: P${totalPrice}`,
+      `Estimated duration: ${formatMinutes(totalMinutes)}`,
+      `Deposit: P${deposit}`,
+      `Remaining balance: P${remainingBalance}`,
+      "",
+      "CLIENT DETAILS",
+      `Name: ${name || "Not provided"}`,
+      `Phone: ${phone || "Not provided"}`,
+      `Notes: ${notes || "None"}`,
+      "",
+      "APPOINTMENT",
+      "Date/time selected through the Glow Spot BW booking calendar.",
+      "",
+      "I have read and agreed to the Glow Spot BW booking policy.",
+      "",
+      "Please confirm my appointment. 🤍",
+    ].join("\n");
   }, [
     selectedServices,
-    totalMinutes,
     totalPrice,
+    totalMinutes,
     deposit,
     remainingBalance,
     name,
@@ -210,16 +186,19 @@ function Book() {
     summary,
   )}`;
 
-  function scrollToTop() {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: "auto",
+  function toggleService(id: string) {
+    setSelectedIds((current) => {
+      if (current.includes(id)) {
+        if (current.length === 1) return current;
+        return current.filter((item) => item !== id);
+      }
+
+      return [...current, id];
     });
   }
 
   function goNext() {
-    setCurrentStep((step) => Math.min(step + 1, 6));
+    setCurrentStep((step) => Math.min(step + 1, 5));
 
     requestAnimationFrame(() => {
       scrollToTop();
@@ -244,953 +223,1085 @@ function Book() {
     }
   }
 
-  return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
-      {/* =========================================================
-          HEADER
-      ========================================================= */}
+  function confirmBooking() {
+    if (!paymentProofSent) return;
 
-      <header className="text-center">
-        <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-          Reserve
-        </p>
+    setBookingConfirmed(true);
 
-        <h1 className="mt-2 font-display text-4xl text-primary sm:text-5xl">
-          Book your glow
-        </h1>
+    requestAnimationFrame(() => {
+      scrollToTop();
+    });
+  }
 
-        <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-          Choose your services, select your appointment slot,
-          provide your details, confirm through WhatsApp and
-          complete your deposit.
-        </p>
+  const detailsValid =
+    name.trim().length > 1 &&
+    phone.trim().length >= 7 &&
+    policyAccepted;
 
-        <p className="mx-auto mt-4 inline-flex flex-wrap items-center justify-center gap-2 rounded-full bg-secondary/60 px-4 py-2 text-xs text-primary/80">
-          <Clock className="h-3.5 w-3.5" />
-          {HOURS_TEXT}
-        </p>
-      </header>
+  if (bookingConfirmed) {
+    return (
+      <main className="min-h-screen bg-background px-4 py-10">
+        <div className="mx-auto max-w-2xl">
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-10">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+              <CheckCircle2 className="h-9 w-9 text-primary" />
+            </div>
 
-      {/* =========================================================
-          PROGRESS STEPS
-      ========================================================= */}
+            <div className="mt-6 text-center">
+              <p className="text-sm font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                Glow Spot BW
+              </p>
 
-      <div className="mt-8 grid grid-cols-6 gap-1 sm:gap-2">
-        {[
-          { number: 1, label: "Services" },
-          { number: 2, label: "Slot" },
-          { number: 3, label: "Details" },
-          { number: 4, label: "WhatsApp" },
-          { number: 5, label: "Deposit" },
-          { number: 6, label: "Confirmed" },
-        ].map((step) => (
-          <button
-            key={step.number}
-            type="button"
-            onClick={() => goToStep(step.number)}
-            disabled={step.number > currentStep}
-            className={`rounded-xl px-1 py-2.5 text-center transition ${
-              currentStep === step.number
-                ? "bg-primary text-primary-foreground"
-                : step.number < currentStep
-                  ? "bg-primary/10 text-primary"
-                  : "bg-secondary/60 text-muted-foreground"
-            }`}
-          >
-            <span className="block text-xs font-bold">
-              {step.number}
-            </span>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+                Booking confirmation submitted 🤍
+              </h1>
 
-            <span className="mt-0.5 block text-[9px] sm:text-xs">
-              {step.label}
-            </span>
-          </button>
-        ))}
-      </div>
+              <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-muted-foreground">
+                Your booking details and payment confirmation have been
+                submitted. Glow Spot BW will confirm the appointment with you
+                through WhatsApp.
+              </p>
+            </div>
 
-      {/* =========================================================
-          STEP 1 — SERVICES
-      ========================================================= */}
+            <div className="mt-8 rounded-2xl border border-border bg-background p-5">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium">Booking summary</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {name}
+                  </p>
+                </div>
 
-      {currentStep === 1 && (
-        <section className="mt-10">
-          <div>
-            <h2 className="font-display text-2xl text-primary sm:text-3xl">
-              Step 1 — Choose your service(s)
-            </h2>
+                <div className="text-right">
+                  <p className="text-lg font-semibold">P{totalPrice}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatMinutes(totalMinutes)}
+                  </p>
+                </div>
+              </div>
 
-            <p className="mt-1 text-sm leading-6 text-muted-foreground">
-              Select every service you want for the same appointment.
-              Tap a category to view its services.
-            </p>
+              <div className="mt-5 space-y-3 border-t border-border pt-5">
+                {selectedServices.map((item) => (
+                  <div
+                    key={item?.id}
+                    className="flex items-center justify-between gap-4 text-sm"
+                  >
+                    <span>{item?.name}</span>
+                    <span className="font-medium">P{item?.price}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-border bg-card p-5">
+              <div className="flex gap-3">
+                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+
+                <div>
+                  <p className="font-medium">What happens next?</p>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                    Keep your payment proof and WhatsApp conversation for your
+                    records. Your appointment is considered confirmed once
+                    Glow Spot BW confirms it with you.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <a
+              href={waLink}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+            >
+              <MessageCircle className="h-5 w-5" />
+              Open WhatsApp
+              <ExternalLink className="h-4 w-4" />
+            </a>
           </div>
+        </div>
+      </main>
+    );
+  }
 
-          {/* =====================================================
-              COLLAPSIBLE SERVICE CATEGORIES
-          ===================================================== */}
+  return (
+    <main className="min-h-screen bg-background px-4 py-6 sm:py-10">
+      <div className="mx-auto max-w-3xl">
+        {/* Header */}
+        <div className="mb-7 text-center">
+          <p className="text-xs font-medium uppercase tracking-[0.25em] text-muted-foreground">
+            Glow Spot BW
+          </p>
 
-          <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card">
-            {SERVICE_GROUPS.map((group) => {
-              const isOpen = openCategory === group.group;
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
+            Book your appointment
+          </h1>
 
-              const selectedInCategory = group.services.filter((s) =>
-                selectedIds.includes(s.id),
-              ).length;
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
+            Choose your services, select your appointment slot, provide your
+            details and complete your deposit.
+          </p>
+        </div>
+
+        {/* Progress */}
+        <div className="mb-6 overflow-x-auto">
+          <div className="mx-auto flex min-w-[650px] items-center justify-center">
+            {[
+              ["Services", 1],
+              ["Slot", 2],
+              ["Details", 3],
+              ["Review", 4],
+              ["Deposit", 5],
+            ].map(([label, step], index) => {
+              const stepNumber = Number(step);
+              const active = currentStep === stepNumber;
+              const complete = currentStep > stepNumber;
 
               return (
-                <div
-                  key={group.group}
-                  className="border-b border-border last:border-b-0"
-                >
-                  {/* CATEGORY HEADER */}
-
+                <div key={label} className="flex items-center">
                   <button
                     type="button"
-                    onClick={() => toggleCategory(group.group)}
-                    aria-expanded={isOpen}
-                    className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left transition hover:bg-secondary/40"
+                    onClick={() => goToStep(stepNumber)}
+                    disabled={stepNumber > currentStep}
+                    className="flex items-center gap-2 disabled:cursor-default"
                   >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-display text-xl text-foreground sm:text-2xl">
-                          {group.group}
-                        </h3>
-
-                        {selectedInCategory > 0 && (
-                          <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground">
-                            {selectedInCategory} selected
-                          </span>
-                        )}
-                      </div>
-
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {group.services.length} service
-                        {group.services.length === 1 ? "" : "s"}
-                      </p>
-                    </div>
-
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-primary">
-                      {isOpen ? (
-                        <ChevronUp className="h-5 w-5" />
+                    <span
+                      className={[
+                        "flex h-9 w-9 items-center justify-center rounded-full border text-sm font-semibold transition",
+                        active
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : complete
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border bg-card text-muted-foreground",
+                      ].join(" ")}
+                    >
+                      {complete ? (
+                        <Check className="h-4 w-4" />
                       ) : (
-                        <ChevronDown className="h-5 w-5" />
+                        stepNumber
                       )}
+                    </span>
+
+                    <span
+                      className={[
+                        "hidden text-xs font-medium sm:block",
+                        active
+                          ? "text-foreground"
+                          : "text-muted-foreground",
+                      ].join(" ")}
+                    >
+                      {label}
                     </span>
                   </button>
 
-                  {/* SERVICES INSIDE CATEGORY */}
-
-                  {isOpen && (
-                    <div className="space-y-3 bg-secondary/20 px-4 pb-4 pt-1">
-                      {group.services.map((s) => {
-                        const chosen = selectedIds.includes(s.id);
-
-                        return (
-                          <button
-                            type="button"
-                            key={s.id}
-                            onClick={() => toggleService(s.id)}
-                            aria-pressed={chosen}
-                            className={`flex w-full items-start justify-between gap-3 rounded-2xl border p-4 text-left transition ${
-                              chosen
-                                ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                                : "border-border bg-card hover:border-primary/50"
-                            }`}
-                          >
-                            <div className="flex min-w-0 flex-1 gap-3">
-                              <span
-                                className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-                                  chosen
-                                    ? "bg-primary text-primary-foreground"
-                                    : "bg-secondary text-primary"
-                                }`}
-                              >
-                                {chosen ? (
-                                  <CheckCircle2 className="h-4 w-4" />
-                                ) : (
-                                  <Plus className="h-4 w-4" />
-                                )}
-                              </span>
-
-                              <div className="min-w-0">
-                                <p className="font-medium text-foreground">
-                                  {s.name}
-                                </p>
-
-                                <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                                  {formatMinutes(s.minutes)} ·{" "}
-                                  {s.description}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="shrink-0 text-right">
-                              <p className="font-display text-lg text-primary">
-                                {s.priceLabel ?? `P${s.price}`}
-                              </p>
-
-                              <span className="text-[10px] text-muted-foreground">
-                                {formatMinutes(s.minutes)}
-                              </span>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
+                  {index < 4 && (
+                    <div
+                      className={[
+                        "mx-2 h-px w-8 sm:w-12",
+                        currentStep > stepNumber
+                          ? "bg-primary"
+                          : "bg-border",
+                      ].join(" ")}
+                    />
                   )}
                 </div>
               );
             })}
           </div>
+        </div>
 
-          {/* =====================================================
-              SELECTED SERVICES
-          ===================================================== */}
+        {/* STEP 1 — SERVICES */}
+        {currentStep === 1 && (
+          <section className="space-y-5">
+            <div className="rounded-3xl border border-border bg-card p-5 sm:p-7">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                    Step 1
+                  </p>
 
-          <div className="mt-5 rounded-2xl bg-secondary/60 p-4">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Selected
-                </p>
+                  <h2 className="mt-1 text-xl font-semibold">
+                    Select your services
+                  </h2>
 
-                <p className="mt-1 font-medium text-primary">
-                  {selectedServices.length} service
-                  {selectedServices.length === 1 ? "" : "s"}
-                </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Choose one or more services.
+                  </p>
+                </div>
+
+                <div className="rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
+                  {selectedIds.length} selected
+                </div>
               </div>
 
-              <div className="text-right">
-                <p className="font-display text-xl text-primary">
-                  BWP {totalPrice}
-                </p>
+              {/* Compact categories */}
+              <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {SERVICE_GROUPS.map((group) => {
+                  const isActive = activeGroup === group.group;
 
-                <p className="text-xs text-muted-foreground">
-                  {formatMinutes(totalMinutes)}
-                </p>
-              </div>
-            </div>
-
-            {selectedServices.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {selectedServices.map((s) => {
-                  if (!s) return null;
+                  const selectedCount = group.services.filter((item) =>
+                    selectedIds.includes(item.id),
+                  ).length;
 
                   return (
-                    <span
-                      key={s.id}
-                      className="rounded-full bg-background px-3 py-1.5 text-xs text-primary"
+                    <button
+                      type="button"
+                      key={group.group}
+                      onClick={() => setActiveGroup(group.group)}
+                      className={[
+                        "flex min-h-[54px] items-center justify-between gap-2 rounded-2xl border px-3 py-3 text-left text-sm transition",
+                        isActive
+                          ? "border-primary bg-primary/10 text-foreground"
+                          : "border-border bg-background hover:border-primary/40",
+                      ].join(" ")}
                     >
-                      {s.name}
-                    </span>
+                      <span className="font-medium">{group.group}</span>
+
+                      {selectedCount > 0 ? (
+                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
+                          {selectedCount}
+                        </span>
+                      ) : isActive ? (
+                        <ChevronUp className="h-4 w-4 shrink-0" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 shrink-0" />
+                      )}
+                    </button>
                   );
                 })}
               </div>
-            )}
-          </div>
 
-          {/* NEXT */}
-
-          <div className="mt-6 flex justify-end">
-            <button
-              type="button"
-              onClick={goNext}
-              disabled={selectedServices.length === 0}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Continue to booking slot
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
-        </section>
-      )}
-
-      {/* =========================================================
-          STEP 2 — SLOT
-      ========================================================= */}
-
-      {currentStep === 2 && (
-        <section className="mt-10">
-          <div className="flex items-center gap-2">
-            <CalendarDays className="h-5 w-5 text-primary" />
-
-            <h2 className="font-display text-2xl text-primary">
-              Step 2 — Pick your booking slot
-            </h2>
-          </div>
-
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            Choose your preferred date and time. Mondays are closed
-            and unavailable appointment slots are handled by the
-            booking calendar.
-          </p>
-
-          <div className="mt-5 rounded-2xl border border-primary/20 bg-primary/5 p-4">
-            <p className="text-xs uppercase tracking-wider text-primary/70">
-              Your services
-            </p>
-
-            <div className="mt-2 flex items-center justify-between gap-3">
-              <p className="text-sm font-medium text-primary">
-                {selectedServices
-                  .map((s) => s?.name)
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
-
-              <p className="shrink-0 font-display text-lg text-primary">
-                BWP {totalPrice}
-              </p>
-            </div>
-          </div>
-
-          {/* GOOGLE CALENDAR */}
-
-          <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-background shadow-soft">
-            <div className="relative min-h-[520px] sm:min-h-[700px]">
-              <iframe
-                title="Glow Spot BW booking calendar"
-                src={CALENDAR_URL}
-                style={{
-                  border: 0,
-                  display: "block",
-                }}
-                width="100%"
-                height="700"
-                loading="eager"
-                className={`block h-[520px] w-full sm:h-[700px] ${
-                  calendarLive
-                    ? ""
-                    : "pointer-events-none select-none"
-                }`}
-              />
-
-              {!calendarLive && (
-                <button
-                  type="button"
-                  onClick={() => setCalendarLive(true)}
-                  className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/75 px-5 text-center backdrop-blur-sm transition hover:bg-background/60"
-                >
-                  <span className="rounded-full bg-primary px-7 py-3 text-sm font-medium text-primary-foreground shadow-soft">
-                    Tap to activate calendar
-                  </span>
-
-                  <span className="max-w-xs text-xs leading-5 text-muted-foreground">
-                    Activate the calendar to choose your date and
-                    appointment time.
-                  </span>
-                </button>
-              )}
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border p-3 text-xs">
-              {calendarLive ? (
-                <button
-                  type="button"
-                  onClick={() => setCalendarLive(false)}
-                  className="rounded-full bg-secondary px-4 py-1.5 text-primary"
-                >
-                  Lock calendar
-                </button>
-              ) : (
-                <span className="text-muted-foreground">
-                  Calendar locked — tap the calendar above to book.
-                </span>
-              )}
-
-              <a
-                href={CALENDAR_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-primary underline-offset-2 hover:underline"
-              >
-                Open calendar
-                <ExternalLink className="h-3 w-3" />
-              </a>
-            </div>
-          </div>
-
-          <div className="mt-5 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm text-primary">
-            <p className="font-medium">
-              Your services are already selected.
-            </p>
-
-            <p className="mt-1 text-primary/80">
-              Once you have chosen your date and time in the
-              calendar, continue to your details.
-            </p>
-          </div>
-
-          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-            <button
-              type="button"
-              onClick={goBack}
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/40 px-6 py-3 text-sm text-primary"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to services
-            </button>
-
-            <button
-              type="button"
-              onClick={goNext}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
-            >
-              Continue to details
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
-        </section>
-      )}
-
-      {/* =========================================================
-          STEP 3 — DETAILS
-      ========================================================= */}
-
-      {currentStep === 3 && (
-        <section className="mt-10">
-          <h2 className="font-display text-2xl text-primary">
-            Step 3 — Your details
-          </h2>
-
-          <p className="mt-1 text-sm text-muted-foreground">
-            Enter your contact information so Glow Spot BW can
-            contact you about your appointment.
-          </p>
-
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            <Field
-              label="Full name"
-              id="booking-name"
-              value={name}
-              onChange={setName}
-              placeholder="Your full name"
-            />
-
-            <Field
-              label="WhatsApp number"
-              id="booking-phone"
-              value={phone}
-              onChange={setPhone}
-              placeholder="+267 71 234 567"
-              type="tel"
-            />
-          </div>
-
-          <div className="mt-5 rounded-xl border border-border bg-secondary/50 p-4 text-xs leading-5 text-muted-foreground">
-            Your preferred appointment date and time were selected
-            using the booking calendar in Step 2.
-            <br />
-            <br />
-            Appointments outside {HOURS_TEXT} add BWP{" "}
-            {AFTER_HOURS_FEE}.
-          </div>
-
-          <div className="mt-5">
-            <label
-              htmlFor="notes"
-              className="text-sm font-medium text-foreground"
-            >
-              Inspiration / notes
-              <span className="ml-1 text-xs text-muted-foreground">
-                (optional)
-              </span>
-            </label>
-
-            <textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={4}
-              placeholder="Tell us the vibe — colours, length, references…"
-              className="mt-2 w-full resize-none rounded-xl border border-border bg-card p-3 text-base outline-none focus:border-primary"
-            />
-          </div>
-
-          <div className="mt-5 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 p-4 text-sm">
-            <p className="font-display text-base text-primary">
-              Payment proof is sent manually
-            </p>
-
-            <p className="mt-1 leading-6 text-muted-foreground">
-              After opening WhatsApp, send your payment screenshot
-              or receipt directly in the chat.
-            </p>
-          </div>
-
-          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-            <button
-              type="button"
-              onClick={goBack}
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/40 px-6 py-3 text-sm text-primary"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </button>
-
-            <button
-              type="button"
-              onClick={goNext}
-              disabled={!name.trim() || !phone.trim()}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Review WhatsApp
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
-        </section>
-      )}
-
-      {/* =========================================================
-          STEP 4 — WHATSAPP
-      ========================================================= */}
-
-      {currentStep === 4 && (
-        <section className="mt-10">
-          <div className="text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground">
-              <MessageCircle className="h-7 w-7" />
-            </div>
-
-            <h2 className="mt-5 font-display text-2xl text-primary">
-              Step 4 — Confirm on WhatsApp
-            </h2>
-
-            <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
-              Your booking summary is ready. Open WhatsApp, send
-              the message and attach your payment screenshot or
-              receipt.
-            </p>
-          </div>
-
-          <div className="mt-5 rounded-2xl border border-border bg-secondary/50 p-4">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-primary">
-              Booking summary
-            </p>
-
-            <pre className="whitespace-pre-wrap text-xs leading-5 text-foreground/80">
-              {summary}
-            </pre>
-          </div>
-
-          <div className="mt-5 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm text-primary">
-            <p className="font-medium">
-              Before sending your booking:
-            </p>
-
-            <ol className="mt-2 list-inside list-decimal space-y-2 text-primary/80">
-              <li>Tap Send on WhatsApp.</li>
-
-              <li>
-                Attach your payment screenshot or receipt manually.
-              </li>
-
-              <li>Send the WhatsApp message.</li>
-
-              <li>
-                Wait for Glow Spot BW to acknowledge your booking.
-              </li>
-            </ol>
-          </div>
-
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <a
-              href={waLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
-            >
-              <MessageCircle className="h-5 w-5" />
-              Send on WhatsApp
-            </a>
-
-            <button
-              type="button"
-              onClick={() => doCopy(summary)}
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/40 px-5 py-3 text-sm text-primary"
-            >
-              <Copy className="h-4 w-4" />
-              Copy summary
-            </button>
-          </div>
-
-          <div className="mt-6 rounded-xl border border-primary/20 bg-secondary/40 p-4 text-center text-sm text-muted-foreground">
-            <p>
-              After sending your booking on WhatsApp, continue to
-              the deposit instructions.
-            </p>
-          </div>
-
-          <div className="mt-6 flex justify-between">
-            <button
-              type="button"
-              onClick={goBack}
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/40 px-6 py-3 text-sm text-primary"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </button>
-
-            <button
-              type="button"
-              onClick={goNext}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
-            >
-              Continue to deposit
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
-        </section>
-      )}
-
-      {/* =========================================================
-          STEP 5 — DEPOSIT
-      ========================================================= */}
-
-      {currentStep === 5 && (
-        <section className="mt-10">
-          <h2 className="font-display text-2xl text-primary">
-            Step 5 — Pay your BWP {DEPOSIT_AMOUNT} deposit
-          </h2>
-
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            Complete your deposit using one of the payment methods
-            below. Your booking is only fully confirmed after the
-            deposit has been completed.
-          </p>
-
-          <div className="mt-5 rounded-2xl p-5 glass shadow-soft">
-            <div className="flex items-baseline justify-between gap-4">
-              <p className="text-sm text-muted-foreground">
-                Deposit required
-              </p>
-
-              <p className="font-display text-3xl text-primary">
-                BWP {deposit}
-              </p>
-            </div>
-
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <PayCard
-                title="Pay2Cell / Orange Money"
-                lines={[
-                  `Name: ${PAYMENT_DETAILS.orangeMoney.name}`,
-                  `Number: ${PAYMENT_DETAILS.orangeMoney.number}`,
-                ]}
-                copyText={
-                  PAYMENT_DETAILS.orangeMoney.number
-                }
-              />
-
-              <PayCard
-                title="FNB Botswana"
-                lines={[
-                  `Account name: ${PAYMENT_DETAILS.bank.name}`,
-                  `Account no.: ${PAYMENT_DETAILS.bank.account}`,
-                  `Branch: ${PAYMENT_DETAILS.bank.branch}`,
-                  `Branch no.: ${PAYMENT_DETAILS.bank.branchNumber}`,
-                ]}
-                copyText={PAYMENT_DETAILS.bank.account}
-              />
-            </div>
-
-            <p className="mt-4 text-xs leading-5 text-muted-foreground">
-              Use your full name as the payment reference. The
-              remaining balance is paid at the studio on the day of
-              your appointment.
-            </p>
-          </div>
-
-          <div className="mt-5 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
-            <p className="font-medium text-primary">
-              Important
-            </p>
-
-            <p className="mt-1 leading-6 text-primary/80">
-              After paying, make sure your payment proof has been
-              sent through WhatsApp. Then tap the button below to
-              complete your booking.
-            </p>
-          </div>
-
-          <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-            <button
-              type="button"
-              onClick={goBack}
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/40 px-6 py-3 text-sm text-primary"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </button>
-
-            <button
-              type="button"
-              onClick={goNext}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
-            >
-              I've completed my deposit
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
-        </section>
-      )}
-
-      {/* =========================================================
-          STEP 6 — CONFIRMED
-      ========================================================= */}
-
-      {currentStep === 6 && (
-        <section className="mt-10">
-          <div className="rounded-3xl border border-primary/20 bg-primary/5 p-6 text-center sm:p-10">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-soft">
-              <CheckCircle2 className="h-10 w-10" />
-            </div>
-
-            <p className="mt-6 text-xs uppercase tracking-[0.3em] text-primary/70">
-              Booking complete
-            </p>
-
-            <h2 className="mt-2 font-display text-3xl text-primary sm:text-4xl">
-              Your booking is confirmed!
-            </h2>
-
-            <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-muted-foreground">
-              Thank you, {name || "for booking with us"}. Your
-              booking request and deposit have been completed.
-              Glow Spot BW will confirm the appointment details
-              with you on WhatsApp.
-            </p>
-
-            <div className="mx-auto mt-6 max-w-md rounded-2xl bg-background p-5 text-left shadow-soft">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                Booking summary
-              </p>
-
-              <div className="mt-4 space-y-3 text-sm">
-                <div className="flex justify-between gap-4">
-                  <span className="text-muted-foreground">
-                    Client
-                  </span>
-
-                  <span className="font-medium text-foreground">
-                    {name}
-                  </span>
+              {/* Services */}
+              <div className="mt-5 rounded-2xl border border-border bg-background p-3">
+                <div className="mb-3 flex items-center justify-between px-2">
+                  <div>
+                    <p className="font-semibold">{activeGroup}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Select what you need
+                    </p>
+                  </div>
+
+                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
                 </div>
 
-                <div className="flex justify-between gap-4">
-                  <span className="text-muted-foreground">
-                    Services
-                  </span>
+                <div className="space-y-2">
+                  {activeServices.map((item) => {
+                    const selected = selectedIds.includes(item.id);
 
-                  <span className="text-right font-medium text-foreground">
-                    {selectedServices.length}
-                  </span>
-                </div>
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => toggleService(item.id)}
+                        className={[
+                          "flex w-full items-center justify-between gap-4 rounded-xl border p-3 text-left transition",
+                          selected
+                            ? "border-primary bg-primary/10"
+                            : "border-border bg-card hover:border-primary/40",
+                        ].join(" ")}
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium">
+                              {item.name}
+                            </p>
 
-                <div className="flex justify-between gap-4">
-                  <span className="text-muted-foreground">
-                    Total
-                  </span>
+                            {selected && (
+                              <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
+                                Selected
+                              </span>
+                            )}
+                          </div>
 
-                  <span className="font-display text-lg text-primary">
-                    BWP {totalPrice}
-                  </span>
-                </div>
+                          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                            {item.description}
+                          </p>
 
-                <div className="flex justify-between gap-4">
-                  <span className="text-muted-foreground">
-                    Deposit
-                  </span>
+                          <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3.5 w-3.5" />
+                              {item.duration ??
+                                formatMinutes(item.minutes)}
+                            </span>
+                          </div>
+                        </div>
 
-                  <span className="font-medium text-foreground">
-                    BWP {deposit}
-                  </span>
-                </div>
-
-                <div className="flex justify-between gap-4">
-                  <span className="text-muted-foreground">
-                    Balance
-                  </span>
-
-                  <span className="font-medium text-foreground">
-                    BWP {remainingBalance}
-                  </span>
+                        <div className="shrink-0 text-right">
+                          <p className="font-semibold">
+                            P{item.price}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
 
-            <div className="mt-6 rounded-xl bg-background/70 p-4 text-sm text-muted-foreground">
-              <p className="font-medium text-primary">
-                Keep your WhatsApp chat with Glow Spot BW.
-              </p>
+            {/* Selection summary */}
+            <div className="rounded-3xl border border-border bg-card p-5 sm:p-7">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold">Your selection</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {selectedServices.length} service
+                    {selectedServices.length === 1 ? "" : "s"}
+                  </p>
+                </div>
 
-              <p className="mt-1">
-                Glow Spot BW will use WhatsApp to communicate with
-                you about your appointment and any final details.
-              </p>
+                <div className="text-right">
+                  <p className="text-lg font-semibold">
+                    P{totalPrice}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatMinutes(totalMinutes)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {selectedServices.map((item) => (
+                  <div
+                    key={item?.id}
+                    className="flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-xs"
+                  >
+                    <span>{item?.name}</span>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        item?.id && toggleService(item.id)
+                      }
+                      className="rounded-full p-0.5 hover:bg-muted"
+                      aria-label={`Remove ${item?.name}`}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={goNext}
+                disabled={selectedServices.length === 0}
+                className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Continue to booking
+                <ArrowRight className="h-4 w-4" />
+              </button>
             </div>
-          </div>
+          </section>
+        )}
 
-          <div className="mt-6 flex justify-center">
-            <a
-              href={waLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-7 py-3 text-base font-medium text-primary-foreground shadow-soft"
-            >
-              <MessageCircle className="h-5 w-5" />
-              Open WhatsApp
-            </a>
-          </div>
-        </section>
-      )}
+        {/* STEP 2 — CALENDAR */}
+        {currentStep === 2 && (
+          <section className="space-y-5">
+            <div className="rounded-3xl border border-border bg-card p-5 sm:p-7">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                  Step 2
+                </p>
 
-      {/* =========================================================
-          BOOKING SUMMARY
-      ========================================================= */}
+                <h2 className="mt-1 text-xl font-semibold">
+                  Choose your appointment slot
+                </h2>
 
-      <section className="mt-10 rounded-2xl border border-border bg-card p-5 shadow-soft">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="font-display text-lg text-primary">
-            Booking summary
-          </h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Select your preferred date and time using the Glow Spot BW
+                  appointment calendar below.
+                </p>
+              </div>
 
-          <span className="rounded-full bg-secondary px-3 py-1 text-xs text-primary">
-            Step {currentStep} of 6
-          </span>
+              <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-background">
+                <div className="flex items-center gap-3 border-b border-border p-4">
+                  <CalendarDays className="h-5 w-5 text-primary" />
+
+                  <div>
+                    <p className="text-sm font-semibold">
+                      Appointment calendar
+                    </p>
+
+                    <p className="text-xs text-muted-foreground">
+                      {HOURS_TEXT}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="relative min-h-[650px]">
+                  {!calendarLive && (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/95 p-6">
+                      <div className="max-w-sm text-center">
+                        <CalendarDays className="mx-auto h-10 w-10 text-primary" />
+
+                        <h3 className="mt-4 text-lg font-semibold">
+                          Select your appointment time
+                        </h3>
+
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                          Open the live booking calendar to choose your
+                          preferred date and time.
+                        </p>
+
+                        <button
+                          type="button"
+                          onClick={() => setCalendarLive(true)}
+                          className="mt-5 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground"
+                        >
+                          Open calendar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <iframe
+                    title="Glow Spot BW appointment calendar"
+                    src={CALENDAR_URL}
+                    className="h-[650px] w-full border-0"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-2xl border border-border bg-background p-4">
+                <div className="flex gap-3">
+                  <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+
+                  <div>
+                    <p className="text-sm font-semibold">
+                      Important
+                    </p>
+
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      The calendar handles the appointment date and time.
+                      Your booking details and deposit will be completed in
+                      the next steps.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+                <button
+                  type="button"
+                  onClick={goBack}
+                  className="flex items-center justify-center gap-2 rounded-2xl border border-border px-5 py-3.5 text-sm font-semibold"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back
+                </button>
+
+                <button
+                  type="button"
+                  onClick={goNext}
+                  className="flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground"
+                >
+                  I've selected my slot
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* STEP 3 — DETAILS + POLICY */}
+        {currentStep === 3 && (
+          <section className="space-y-5">
+            <div className="rounded-3xl border border-border bg-card p-5 sm:p-7">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                  Step 3
+                </p>
+
+                <h2 className="mt-1 text-xl font-semibold">
+                  Your details
+                </h2>
+
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Enter the details we need to prepare your booking.
+                </p>
+              </div>
+
+              <div className="mt-6 space-y-4">
+                <Field
+                  label="Full name"
+                  value={name}
+                  onChange={setName}
+                  placeholder="Enter your full name"
+                />
+
+                <Field
+                  label="Phone number"
+                  value={phone}
+                  onChange={setPhone}
+                  placeholder="e.g. 72 123 456"
+                  type="tel"
+                />
+
+                <div>
+                  <label className="text-sm font-medium">
+                    Notes{" "}
+                    <span className="font-normal text-muted-foreground">
+                      (optional)
+                    </span>
+                  </label>
+
+                  <textarea
+                    value={notes}
+                    onChange={(event) => setNotes(event.target.value)}
+                    placeholder="Anything we should know about your appointment?"
+                    rows={4}
+                    className="mt-2 w-full resize-none rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition placeholder:text-muted-foreground focus:border-primary"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* BOOKING POLICY */}
+            <div className="rounded-3xl border border-border bg-card p-5 sm:p-7">
+              <div className="flex items-start gap-3">
+                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                    Please read before booking
+                  </p>
+
+                  <h2 className="mt-1 text-xl font-semibold">
+                    BOOKING POLICY 🤍
+                  </h2>
+                </div>
+              </div>
+
+              <div className="mt-6 space-y-5 text-sm leading-6 text-muted-foreground">
+                <PolicyItem>
+                  <strong className="font-semibold italic text-foreground">
+                    Deposits are required
+                  </strong>{" "}
+                  to secure all appointments and are non-refundable.
+                </PolicyItem>
+
+                <PolicyItem>
+                  <strong className="font-semibold text-foreground">
+                    Please double-check
+                  </strong>{" "}
+                  your booking before confirming. Once an appointment is
+                  confirmed, that time slot is reserved exclusively for you.
+                </PolicyItem>
+
+                <PolicyItem>
+                  <strong className="font-semibold text-foreground">
+                    Double bookings:
+                  </strong>{" "}
+                  If multiple appointments are booked under the same client,
+                  the client must cancel the duplicate booking. The deposit
+                  for the cancelled booking will not be{" "}
+                  <strong className="font-semibold italic text-foreground">
+                    refunded.
+                  </strong>
+                </PolicyItem>
+
+                <PolicyItem>
+                  <strong className="font-semibold text-foreground">
+                    Cancellations & rescheduling:
+                  </strong>{" "}
+                  At least{" "}
+                  <strong className="font-semibold italic text-foreground">
+                    24 hours’
+                  </strong>{" "}
+                  notice is required. Late cancellations and rescheduling may
+                  result in the deposit being forfeited.
+                </PolicyItem>
+
+                <PolicyItem>
+                  <strong className="font-semibold text-foreground">
+                    No-shows:
+                  </strong>{" "}
+                  Failure to attend your appointment without notice will result
+                  in the deposit being forfeited.
+                </PolicyItem>
+
+                <PolicyItem>
+                  <strong className="font-semibold text-foreground">
+                    Late arrivals:
+                  </strong>{" "}
+                  A grace period of{" "}
+                  <strong className="font-semibold text-foreground">
+                    10 minutes
+                  </strong>{" "}
+                  applies to both parties. Arriving later may result in your
+                  appointment being shortened or cancelled.
+                </PolicyItem>
+
+                <div>
+                  <p className="font-semibold text-foreground">
+                    • BOOKING FOR SOMEONE ELSE
+                  </p>
+
+                  <p className="mt-4">
+                    If you are booking an appointment on behalf of another
+                    person, you are responsible for ensuring that the correct
+                    client information, date and time are selected.
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-semibold text-foreground">
+                    . CLIENT RESPONSIBILITY
+                  </p>
+
+                  <p className="mt-4 font-semibold text-foreground">
+                    Please double-check your:
+                  </p>
+
+                  <ul className="mt-3 space-y-1 pl-2">
+                    <li>* Service</li>
+                    <li>* Date</li>
+                    <li>* Time</li>
+                    <li>* Contact details</li>
+                  </ul>
+
+                  <p className="mt-5 font-semibold text-foreground">
+                    *also always share your appointment summary to our WhatsApp
+                    line.
+                  </p>
+
+                  <p className="mt-5">
+                    • before completing your booking.
+                  </p>
+
+                  <p className="mt-5 font-semibold text-foreground">
+                    • Once an appointment has been confirmed, the client is
+                    responsible for the booking.
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-semibold text-foreground">
+                    9. POLICY ACCEPTANCE
+                  </p>
+
+                  <p className="mt-4">
+                    By making a booking, you acknowledge that you have read,
+                    understood and agreed to these booking policies. ❤️
+                  </p>
+                </div>
+              </div>
+
+              {/* Acceptance checkbox */}
+              <label className="mt-6 flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-background p-4">
+                <input
+                  type="checkbox"
+                  checked={policyAccepted}
+                  onChange={(event) =>
+                    setPolicyAccepted(event.target.checked)
+                  }
+                  className="mt-1 h-4 w-4 accent-primary"
+                />
+
+                <span className="text-sm leading-6 text-foreground">
+                  I have read, understood and agree to the Glow Spot BW
+                  booking policies.
+                </span>
+              </label>
+
+              <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+                <button
+                  type="button"
+                  onClick={goBack}
+                  className="flex items-center justify-center gap-2 rounded-2xl border border-border px-5 py-3.5 text-sm font-semibold"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back
+                </button>
+
+                <button
+                  type="button"
+                  onClick={goNext}
+                  disabled={!detailsValid}
+                  className="flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Continue to review
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* STEP 4 — REVIEW */}
+        {currentStep === 4 && (
+          <section className="space-y-5">
+            <div className="rounded-3xl border border-border bg-card p-5 sm:p-7">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                  Step 4
+                </p>
+
+                <h2 className="mt-1 text-xl font-semibold">
+                  Review your booking
+                </h2>
+
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Check everything carefully before proceeding to the deposit.
+                </p>
+              </div>
+
+              <div className="mt-6 space-y-5">
+                <SummaryBlock title="Services">
+                  {selectedServices.map((item) => (
+                    <div
+                      key={item?.id}
+                      className="flex items-center justify-between gap-4 py-2 text-sm"
+                    >
+                      <div>
+                        <p className="font-medium">{item?.name}</p>
+
+                        <p className="text-xs text-muted-foreground">
+                          {item?.duration ??
+                            formatMinutes(item?.minutes ?? 0)}
+                        </p>
+                      </div>
+
+                      <p className="font-semibold">
+                        P{item?.price}
+                      </p>
+                    </div>
+                  ))}
+                </SummaryBlock>
+
+                <SummaryBlock title="Client">
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between gap-4">
+                      <span className="text-muted-foreground">
+                        Name
+                      </span>
+
+                      <span className="font-medium">{name}</span>
+                    </div>
+
+                    <div className="flex justify-between gap-4">
+                      <span className="text-muted-foreground">
+                        Phone
+                      </span>
+
+                      <span className="font-medium">{phone}</span>
+                    </div>
+
+                    {notes && (
+                      <div className="border-t border-border pt-3">
+                        <p className="text-muted-foreground">Notes</p>
+
+                        <p className="mt-1">{notes}</p>
+                      </div>
+                    )}
+                  </div>
+                </SummaryBlock>
+
+                <SummaryBlock title="Payment summary">
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">
+                        Total
+                      </span>
+
+                      <span className="font-semibold">
+                        P{totalPrice}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">
+                        Deposit
+                      </span>
+
+                      <span className="font-semibold">
+                        P{deposit}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between border-t border-border pt-3">
+                      <span className="font-medium">
+                        Remaining balance
+                      </span>
+
+                      <span className="font-semibold">
+                        P{remainingBalance}
+                      </span>
+                    </div>
+                  </div>
+                </SummaryBlock>
+
+                <div className="rounded-2xl border border-border bg-background p-4">
+                  <div className="flex gap-3">
+                    <MessageCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+
+                    <div>
+                      <p className="text-sm font-semibold">
+                        WhatsApp booking message ready
+                      </p>
+
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                        Your booking information will be sent to Glow Spot BW
+                        through WhatsApp after you complete the deposit.
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => doCopy(summary)}
+                    className="mt-4 flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-xs font-semibold"
+                  >
+                    <Copy className="h-4 w-4" />
+                    Copy booking message
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+                <button
+                  type="button"
+                  onClick={goBack}
+                  className="flex items-center justify-center gap-2 rounded-2xl border border-border px-5 py-3.5 text-sm font-semibold"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back
+                </button>
+
+                <button
+                  type="button"
+                  onClick={goNext}
+                  className="flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground"
+                >
+                  Continue to deposit
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* STEP 5 — DEPOSIT */}
+        {currentStep === 5 && (
+          <section className="space-y-5">
+            <div className="rounded-3xl border border-border bg-card p-5 sm:p-7">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                  Step 5
+                </p>
+
+                <h2 className="mt-1 text-xl font-semibold">
+                  Pay your deposit & confirm
+                </h2>
+
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  A P{deposit} deposit is required to secure your appointment.
+                </p>
+              </div>
+
+              <div className="mt-6 space-y-4">
+                <PayCard
+                  title="Orange Money / Pay2Cell"
+                  lines={[
+                    `Name: ${PAYMENT_DETAILS.orangeMoney.name}`,
+                    `Number: ${PAYMENT_DETAILS.orangeMoney.number}`,
+                  ]}
+                  copyText={PAYMENT_DETAILS.orangeMoney.number}
+                />
+
+                <PayCard
+                  title="Bank Transfer — FNB Botswana"
+                  lines={[
+                    `Account name: ${PAYMENT_DETAILS.bank.name}`,
+                    `Account no.: ${PAYMENT_DETAILS.bank.account}`,
+                    `Branch: ${PAYMENT_DETAILS.bank.branch}`,
+                    `Branch no.: ${PAYMENT_DETAILS.bank.branchNumber}`,
+                  ]}
+                  copyText={PAYMENT_DETAILS.bank.account}
+                />
+              </div>
+
+              <div className="mt-5 rounded-2xl border border-border bg-background p-4">
+                <p className="text-sm font-semibold">
+                  After payment
+                </p>
+
+                <ol className="mt-3 space-y-2 text-sm leading-6 text-muted-foreground">
+                  <li>
+                    1. Pay the P{deposit} deposit using one of the payment
+                    methods above.
+                  </li>
+
+                  <li>
+                    2. Take a screenshot or photo of your payment proof.
+                  </li>
+
+                  <li>
+                    3. Send your booking details and payment proof through
+                    WhatsApp.
+                  </li>
+
+                  <li>
+                    4. Return here and confirm that you have completed the
+                    process.
+                  </li>
+                </ol>
+              </div>
+
+              <a
+                href={waLink}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] px-5 py-3.5 text-sm font-semibold text-white transition hover:opacity-90"
+              >
+                <MessageCircle className="h-5 w-5" />
+                Send booking through WhatsApp
+                <ExternalLink className="h-4 w-4" />
+              </a>
+
+              <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-background p-4">
+                <input
+                  type="checkbox"
+                  checked={paymentProofSent}
+                  onChange={(event) =>
+                    setPaymentProofSent(event.target.checked)
+                  }
+                  className="mt-1 h-4 w-4 accent-primary"
+                />
+
+                <span className="text-sm leading-6 text-foreground">
+                  I have paid the P{deposit} deposit and sent my booking
+                  details and payment proof through WhatsApp.
+                </span>
+              </label>
+
+              <div className="mt-6 rounded-2xl border border-border bg-card p-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-medium">
+                      Appointment total
+                    </p>
+
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {formatMinutes(totalMinutes)}
+                    </p>
+                  </div>
+
+                  <div className="text-right">
+                    <p className="text-lg font-semibold">
+                      P{totalPrice}
+                    </p>
+
+                    <p className="text-xs text-muted-foreground">
+                      P{remainingBalance} remaining
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+                <button
+                  type="button"
+                  onClick={goBack}
+                  className="flex items-center justify-center gap-2 rounded-2xl border border-border px-5 py-3.5 text-sm font-semibold"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back
+                </button>
+
+                <button
+                  type="button"
+                  onClick={confirmBooking}
+                  disabled={!paymentProofSent}
+                  className="flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Confirm booking
+                  <CheckCircle2 className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Footer reminder */}
+        <div className="mt-6 rounded-2xl border border-border bg-card p-4 text-center">
+          <p className="text-xs leading-5 text-muted-foreground">
+            <span className="font-semibold text-foreground">
+              Booking hours:
+            </span>{" "}
+            {HOURS_TEXT}
+          </p>
+
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+            Deposits are non-refundable. Please review your booking details
+            carefully before confirming.
+          </p>
         </div>
+      </div>
+    </main>
+  );
+}
 
-        <div className="mt-4 space-y-3 text-sm">
-          <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">
-              Services
-            </span>
+function PolicyItem({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex gap-3">
+      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
 
-            <span className="text-right font-medium text-foreground">
-              {selectedServices.length}
-            </span>
-          </div>
-
-          <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">
-              Total duration
-            </span>
-
-            <span className="font-medium text-foreground">
-              {formatMinutes(totalMinutes)}
-            </span>
-          </div>
-
-          <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">
-              Total
-            </span>
-
-            <span className="font-display text-lg text-primary">
-              BWP {totalPrice}
-            </span>
-          </div>
-
-          <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">
-              Deposit
-            </span>
-
-            <span className="font-medium text-foreground">
-              BWP {deposit}
-            </span>
-          </div>
-
-          <div className="flex justify-between gap-4">
-            <span className="text-muted-foreground">
-              Balance at studio
-            </span>
-
-            <span className="font-medium text-foreground">
-              BWP {remainingBalance}
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* =========================================================
-          CANCELLATION
-      ========================================================= */}
-
-      <section className="mt-10 rounded-2xl border border-border bg-secondary/30 p-5 text-sm text-muted-foreground">
-        <h3 className="font-display text-lg text-primary">
-          Cancellation & reminders
-        </h3>
-
-        <ul className="mt-2 list-inside list-disc space-y-2">
-          <li>Deposits are non-refundable.</li>
-
-          <li>
-            Rescheduling is allowed with sufficient notice (24h+).
-          </li>
-
-          <li>
-            Late cancellations may forfeit the deposit.
-          </li>
-
-          <li>
-            A friendly WhatsApp reminder is sent 24 hours before
-            your appointment.
-          </li>
-
-          <li>
-            Appointments outside operating hours add BWP{" "}
-            {AFTER_HOURS_FEE}.
-          </li>
-        </ul>
-      </section>
+      <p>{children}</p>
     </div>
   );
 }
 
-/* ===============================================================
-   FIELD COMPONENT
-=============================================================== */
+function SummaryBlock({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-border bg-background p-4">
+      <p className="mb-3 text-sm font-semibold">{title}</p>
+
+      {children}
+    </div>
+  );
+}
 
 function Field({
   label,
-  id,
   value,
   onChange,
   placeholder,
   type = "text",
 }: {
   label: string;
-  id: string;
   value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
+  onChange: (value: string) => void;
+  placeholder: string;
   type?: string;
 }) {
   return (
     <div>
-      <label
-        htmlFor={id}
-        className="text-sm font-medium text-foreground"
-      >
+      <label className="text-sm font-medium">
         {label}
       </label>
 
       <input
-        id={id}
         type={type}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="mt-2 w-full rounded-xl border border-border bg-card p-3 text-base outline-none focus:border-primary"
+        className="mt-2 w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm outline-none transition placeholder:text-muted-foreground focus:border-primary"
       />
     </div>
   );
 }
-
-/* ===============================================================
-   PAYMENT CARD
-=============================================================== */
 
 function PayCard({
   title,
@@ -1201,38 +1312,33 @@ function PayCard({
   lines: string[];
   copyText: string;
 }) {
-  const [copied, setCopied] = useState(false);
-
   return (
-    <div className="rounded-xl border border-border bg-background/60 p-4">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="font-display text-base text-primary">
-          {title}
-        </h3>
+    <div className="rounded-2xl border border-border bg-background p-4">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="font-semibold">{title}</p>
+
+          <div className="mt-2 space-y-1">
+            {lines.map((line) => (
+              <p
+                key={line}
+                className="text-sm text-muted-foreground"
+              >
+                {line}
+              </p>
+            ))}
+          </div>
+        </div>
 
         <button
           type="button"
-          onClick={() => {
-            doCopy(copyText);
-            setCopied(true);
-
-            setTimeout(() => {
-              setCopied(false);
-            }, 1500);
-          }}
-          className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs text-primary"
+          onClick={() => doCopy(copyText)}
+          className="flex shrink-0 items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-semibold transition hover:bg-muted"
         >
-          <Copy className="h-3 w-3" />
-
-          {copied ? "Copied" : "Copy"}
+          <Copy className="h-3.5 w-3.5" />
+          Copy
         </button>
       </div>
-
-      <ul className="mt-3 space-y-1 text-sm leading-5 text-foreground/80">
-        {lines.map((line) => (
-          <li key={line}>{line}</li>
-        ))}
-      </ul>
     </div>
   );
 }
