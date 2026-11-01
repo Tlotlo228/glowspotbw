@@ -12,7 +12,6 @@ import { Menu, X } from "lucide-react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { GRADUATION_PACKAGES } from "@/lib/site-data";
 
 const logo = { url: "/IMG_0434.jpeg" };
 
@@ -112,86 +111,6 @@ const NAV = [
   { to: "/contact", label: "Contact" },
 ] as const;
 
-function GradPromoPopup() {
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    const dismissed = sessionStorage.getItem("grad-popup-dismissed");
-    if (!dismissed) {
-      const timer = setTimeout(() => setOpen(true), 1500);
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
-  function dismiss() {
-    sessionStorage.setItem("grad-popup-dismissed", "1");
-    setOpen(false);
-  }
-
-  if (!open) return null;
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm"
-      onClick={dismiss}
-    >
-      <div
-        className="relative w-full max-w-md overflow-hidden rounded-3xl bg-background shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Top accent bar */}
-        <div className="h-1.5 w-full bg-gradient-to-r from-rose-300 via-primary to-amber-300" />
-
-        <button
-          onClick={dismiss}
-          className="absolute right-4 top-4 rounded-full p-1 text-muted-foreground transition hover:bg-accent"
-          aria-label="Close"
-        >
-          <X className="h-4 w-4" />
-        </button>
-
-        <div className="px-6 pb-6 pt-5">
-          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Limited Promo</p>
-          <h2 className="mt-1 font-display text-3xl text-primary">Class of 2026 🎓</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Four packages made for your big day. Pick your vibe and graduate cute.
-          </p>
-
-          <ul className="mt-4 space-y-2">
-            {GRADUATION_PACKAGES.map((pkg) => (
-              <li key={pkg.id} className="flex items-center justify-between rounded-xl bg-accent/30 px-4 py-2.5">
-                <div>
-                  <p className="text-sm font-medium text-foreground">{pkg.name}</p>
-                  <p className="text-xs text-muted-foreground">{pkg.vibe}</p>
-                </div>
-                <p className="font-display text-base text-primary">
-                  from P{Math.min(...pkg.tiers.map((t) => t.price))}
-                </p>
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-            <Link
-              to="/packages"
-              onClick={dismiss}
-              className="flex-1 rounded-full bg-primary px-5 py-2.5 text-center text-sm font-medium text-primary-foreground shadow-soft transition hover:opacity-90"
-            >
-              See All Packages →
-            </Link>
-            <button
-              onClick={dismiss}
-              className="flex-1 rounded-full border border-border px-5 py-2.5 text-sm text-muted-foreground transition hover:bg-accent"
-            >
-              Maybe later
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function SiteHeader() {
   const [open, setOpen] = useState(false);
   return (
@@ -252,7 +171,6 @@ function RootComponent() {
   return (
     <RootDocument>
       <QueryClientProvider client={queryClient}>
-        <GradPromoPopup />
         <SiteHeader />
         <main className="min-h-dvh">
           <Outlet />
