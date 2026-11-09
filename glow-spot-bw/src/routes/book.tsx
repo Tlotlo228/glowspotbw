@@ -63,7 +63,7 @@ function doCopy(text: string) {
 }
 
 const HOURS_TEXT =
-  "Tue–Sat 09:00–18:00 · Sun 11:00–17:00 · Mon closed";
+  "Mon–Sat 09:00–18:00 · Sun closed(except monthend)";
 
 function Book() {
   const { service } = Route.useSearch();
