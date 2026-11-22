@@ -559,92 +559,27 @@ export const SERVICE_GROUPS: {
   },
 
   // ============================================================
-  // GRADUATION PACKAGES
+  // BROWS
   // ============================================================
 
   {
-    group: "🎓 Graduation Packages",
+    group: "Brows",
     services: [
       {
-        id: "grad-glow-up-350",
-        name: "Glow-Up Nails — Plain / Frenchies",
-        description:
-          "Nail Combo · Hands & Toes · Plain or Frenchies. Vibe: Classy + Neat.",
-        price: 350,
-        minutes: 90,
-        duration: "≈ 1 hr 30",
+        id: "brow-tint",
+        name: "Brow Tint",
+        description: "Tint to define and fill in your brows.",
+        price: 100,
+        minutes: 30,
+        duration: "≈ 30 min",
       },
       {
-        id: "grad-glow-up-420",
-        name: "Glow-Up Nails — Complex Designs",
-        description:
-          "Complex Nail Combo · Hands & Toes · Complex designs. Vibe: Classy + Neat.",
-        price: 420,
-        minutes: 120,
-        duration: "≈ 2 hrs",
-      },
-      {
-        id: "grad-she-did-it-400",
-        name: "She Did It — Makeup & Install",
-        description:
-          "Makeup & Install · Basic styling. Vibe: Main character + Dramatic.",
-        price: 400,
-        minutes: 75,
-        duration: "≈ 1 hr 15",
-      },
-      {
-        id: "grad-she-did-it-520",
-        name: "She Did It — Makeup & Lashes",
-        description:
-          "Makeup & Lashes · Basic styling & Individual. Vibe: Main character + Dramatic.",
-        price: 520,
-        minutes: 90,
-        duration: "≈ 1 hr 30",
-      },
-      {
-        id: "grad-she-did-it-450",
-        name: "She Did It — Makeup & Nails",
-        description:
-          "Makeup & Nails · Hands · Plain or Frenchies. Vibe: Main character + Dramatic.",
-        price: 450,
-        minutes: 105,
-        duration: "≈ 1 hr 45",
-      },
-      {
-        id: "grad-tassel-300",
-        name: "Tassel Glam — Clusters",
-        description:
-          "Wig Install & Lashes · Basic styling & Clusters. Vibe: Flirty + Soft glam.",
-        price: 300,
-        minutes: 75,
-        duration: "≈ 1 hr 15",
-      },
-      {
-        id: "grad-tassel-460",
-        name: "Tassel Glam — Individual",
-        description:
-          "Wig Install & Lashes · Basic styling & Individual. Vibe: Flirty + Soft glam.",
-        price: 460,
-        minutes: 90,
-        duration: "≈ 1 hr 30",
-      },
-      {
-        id: "grad-drip-duo-360",
-        name: "Drip Duo — Plain / Frenchies",
-        description:
-          "Nails & Lashes · Hands & Clusters · Plain or Frenchies. Vibe: Baddie + Photo-Ready.",
-        price: 360,
-        minutes: 90,
-        duration: "≈ 1 hr 30",
-      },
-      {
-        id: "grad-drip-duo-500",
-        name: "Drip Duo — Complex Designs",
-        description:
-          "Nails & Lashes · Hands & Individuals · Complex designs. Vibe: Baddie + Photo-Ready.",
-        price: 500,
-        minutes: 120,
-        duration: "≈ 2 hrs",
+        id: "brow-lamination",
+        name: "Brow Lamination",
+        description: "Brushed-up, fuller-looking brows that hold their shape.",
+        price: 200,
+        minutes: 60,
+        duration: "≈ 1 hr",
       },
     ],
   },
@@ -836,144 +771,3 @@ export const BLOCKED_SLOTS: Record<string, string[]> = {
     "10:30",
   ],
 };
-
-// ============================================================
-// GRADUATION PACKAGE TYPES
-// ============================================================
-
-export type GradPackageTier = {
-  serviceId: string;
-  price: number;
-  includes: string[];
-};
-
-export type GradPackage = {
-  id: string;
-  name: string;
-  vibe: string;
-  tiers: GradPackageTier[];
-};
-
-// ============================================================
-// GRADUATION PACKAGES
-// ============================================================
-
-export const GRADUATION_PACKAGES: GradPackage[] = [
-  {
-    id: "glow-up-nails",
-    name: "1. Glow-Up Nails",
-    vibe: "Classy + Neat",
-
-    tiers: [
-      {
-        serviceId: "grad-glow-up-350",
-        price: 350,
-        includes: [
-          "Nail Combo",
-          "Hands & Toes",
-          "Plain / Frenchies",
-        ],
-      },
-
-      {
-        serviceId: "grad-glow-up-420",
-        price: 420,
-        includes: [
-          "Complex Nail Combo",
-          "Hands & Toes",
-          "Complex designs",
-        ],
-      },
-    ],
-  },
-
-  {
-    id: "she-did-it",
-    name: "2. She Did It",
-    vibe: "Main character + Dramatic",
-
-    tiers: [
-      {
-        serviceId: "grad-she-did-it-400",
-        price: 400,
-        includes: [
-          "Makeup & Install",
-          "Makeup with basic styling",
-        ],
-      },
-
-      {
-        serviceId: "grad-she-did-it-520",
-        price: 520,
-        includes: [
-          "Makeup & Lashes",
-          "Basic styling & Individual",
-        ],
-      },
-
-      {
-        serviceId: "grad-she-did-it-450",
-        price: 450,
-        includes: [
-          "Makeup & Nails",
-          "Makeup & Hands",
-          "Plain / Frenchies",
-        ],
-      },
-    ],
-  },
-
-  {
-    id: "tassel-glam",
-    name: "3. Tassel Glam",
-    vibe: "Flirty + Soft glam",
-
-    tiers: [
-      {
-        serviceId: "grad-tassel-300",
-        price: 300,
-        includes: [
-          "Wig Install & Lashes",
-          "Basic styling & Clusters",
-        ],
-      },
-
-      {
-        serviceId: "grad-tassel-460",
-        price: 460,
-        includes: [
-          "Wig Install & Lashes",
-          "Basic styling & Individual",
-        ],
-      },
-    ],
-  },
-
-  {
-    id: "drip-duo",
-    name: "4. Drip Duo",
-    vibe: "Baddie + Photo-Ready",
-
-    tiers: [
-      {
-        serviceId: "grad-drip-duo-360",
-        price: 360,
-        includes: [
-          "Nails & Lashes",
-          "Hands & Clusters",
-          "Plain / Frenchies",
-        ],
-      },
-
-      {
-        serviceId: "grad-drip-duo-500",
-        price: 500,
-        includes: [
-          "Nails & Lashes",
-          "Hands & Individuals",
-          "Complex designs",
-        ],
-      },
-    ],
-  },
-];

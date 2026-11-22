@@ -103,7 +103,6 @@ function RootDocument({ children }: { children: ReactNode }) {
 const NAV = [
   { to: "/", label: "Home" },
   { to: "/services", label: "Services" },
-  { to: "/packages", label: "Packages 🎓" },
   { to: "/gallery", label: "Gallery" },
   { to: "/about", label: "About" },
   { to: "/reviews", label: "Reviews" },
